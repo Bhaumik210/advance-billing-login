@@ -60,3 +60,6 @@ def distributor_login(request):
 @login_required
 def dashboard(request):
     return render(request, "accounts/dashboard.html")
+
+def distributor_register(request):
+    return render(request, "accounts/distributor_register.html")

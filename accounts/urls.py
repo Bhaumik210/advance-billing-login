@@ -8,5 +8,12 @@ urlpatterns = [
         views.distributor_login,
         name="distributor_login"
     ),
+
+    
+    path(
+    "register/distributor/",
+    views.distributor_register,
+    name="distributor_register"
+    ),
     path("dashboard/", views.dashboard, name="dashboard"),
 ]
