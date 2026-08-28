@@ -78,6 +78,12 @@ urlpatterns = [
     ),
 
     path(
+        "products/add/",
+        views.add_product,
+        name="add_product"
+    ),
+
+    path(
         "dashboard/",
         views.dashboard,
         name="dashboard"

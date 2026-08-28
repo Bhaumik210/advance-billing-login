@@ -2,6 +2,7 @@ import random
 import re
 
 from datetime import timedelta
+from decimal import Decimal, InvalidOperation
 
 from django.shortcuts import (
     render,
@@ -32,6 +33,7 @@ from .models import (
     OTPVerification,
     DistributorProfile,
     Customer,
+    Product,
 )
 
 
@@ -318,11 +320,8 @@ def distributor_register(request):
             first_name = name_parts[0]
 
             if len(name_parts) > 1:
-
                 last_name = name_parts[1]
-
             else:
-
                 last_name = ""
 
             with transaction.atomic():
@@ -519,7 +518,6 @@ def distributor_profile(request):
         )
 
     except DistributorProfile.DoesNotExist:
-
         pass
 
     return render(
@@ -664,17 +662,11 @@ def edit_distributor_profile(request):
             )
 
             if len(name_parts) > 1:
-
-                user.last_name = (
-                    name_parts[1]
-                )
-
+                user.last_name = name_parts[1]
             else:
-
                 user.last_name = ""
 
             user.email = email
-
             profile.phone = phone
 
             with transaction.atomic():
@@ -860,21 +852,13 @@ def customer_list(request):
     if search_query:
 
         customers = customers.filter(
-            Q(
-                name__icontains=search_query
-            )
+            Q(name__icontains=search_query)
             |
-            Q(
-                email__icontains=search_query
-            )
+            Q(email__icontains=search_query)
             |
-            Q(
-                phone__icontains=search_query
-            )
+            Q(phone__icontains=search_query)
             |
-            Q(
-                address__icontains=search_query
-            )
+            Q(address__icontains=search_query)
         )
 
     customers = customers.order_by(
@@ -1083,6 +1067,206 @@ def delete_customer(
 
     return redirect(
         "customer_list"
+    )
+
+
+@login_required(
+    login_url="distributor_login"
+)
+def add_product(request):
+
+    error = None
+
+    form_data = {
+        "name": "",
+        "category": "",
+        "price": "",
+        "stock": "",
+        "gst_rate": "",
+        "description": ""
+    }
+
+    if request.method == "POST":
+
+        name = request.POST.get(
+            "name",
+            ""
+        ).strip()
+
+        category = request.POST.get(
+            "category",
+            ""
+        ).strip()
+
+        price_value = request.POST.get(
+            "price",
+            ""
+        ).strip()
+
+        stock_value = request.POST.get(
+            "stock",
+            ""
+        ).strip()
+
+        gst_value = request.POST.get(
+            "gst_rate",
+            ""
+        ).strip()
+
+        description = request.POST.get(
+            "description",
+            ""
+        ).strip()
+
+        form_data = {
+            "name": name,
+            "category": category,
+            "price": price_value,
+            "stock": stock_value,
+            "gst_rate": gst_value,
+            "description": description
+        }
+
+        price = None
+        stock = None
+        gst_rate = None
+
+        if not name:
+
+            error = (
+                "Product name is required."
+            )
+
+        elif len(name) < 2:
+
+            error = (
+                "Product name must contain "
+                "at least 2 characters."
+            )
+
+        elif not category:
+
+            error = (
+                "Category is required."
+            )
+
+        if error is None:
+
+            if not price_value:
+
+                error = (
+                    "Price is required."
+                )
+
+            else:
+
+                try:
+
+                    price = Decimal(
+                        price_value
+                    )
+
+                    if price <= 0:
+
+                        error = (
+                            "Price must be greater than 0."
+                        )
+
+                except InvalidOperation:
+
+                    error = (
+                        "Enter a valid price."
+                    )
+
+        if error is None:
+
+            if stock_value == "":
+
+                error = (
+                    "Stock is required."
+                )
+
+            else:
+
+                try:
+
+                    stock = int(
+                        stock_value
+                    )
+
+                    if stock < 0:
+
+                        error = (
+                            "Stock cannot be negative."
+                        )
+
+                except ValueError:
+
+                    error = (
+                        "Stock must be a whole number."
+                    )
+
+        if error is None:
+
+            if not gst_value:
+
+                error = (
+                    "GST rate is required."
+                )
+
+            else:
+
+                try:
+
+                    gst_rate = Decimal(
+                        gst_value
+                    )
+
+                    if gst_rate < 0:
+
+                        error = (
+                            "GST rate cannot be negative."
+                        )
+
+                    elif gst_rate > 100:
+
+                        error = (
+                            "GST rate cannot be greater than 100."
+                        )
+
+                except InvalidOperation:
+
+                    error = (
+                        "Enter a valid GST rate."
+                    )
+
+        if error is None:
+
+            Product.objects.create(
+                name=name,
+                category=category,
+                price=price,
+                stock=stock,
+                gst_rate=gst_rate,
+                description=description
+            )
+
+            messages.success(
+                request,
+                "Product added successfully."
+            )
+
+            return redirect(
+                "add_product"
+            )
+
+    return render(
+        request,
+        "accounts/add_product.html",
+        {
+            "error": error,
+            "form_data": form_data
+        }
     )
 
 
