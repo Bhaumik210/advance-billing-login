@@ -781,6 +781,136 @@ def customer_list(request):
 @login_required(
     login_url="distributor_login"
 )
+@login_required(login_url="distributor_login")
+def edit_customer(request, customer_id):
+
+    customer = get_object_or_404(
+        Customer,
+        id=customer_id
+    )
+
+    error = None
+
+    if request.method == "POST":
+
+        name = request.POST.get(
+            "name",
+            ""
+        ).strip()
+
+        email = request.POST.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        phone = request.POST.get(
+            "phone",
+            ""
+        ).strip()
+
+        address = request.POST.get(
+            "address",
+            ""
+        ).strip()
+
+        if not name:
+            error = "Customer name is required."
+
+        elif len(name) < 2:
+            error = (
+                "Customer name must contain "
+                "at least 2 characters."
+            )
+
+        elif not re.fullmatch(
+            r"[A-Za-z ]+",
+            name
+        ):
+            error = (
+                "Customer name should contain "
+                "only letters and spaces."
+            )
+
+        elif not email:
+            error = "Email address is required."
+
+        else:
+            try:
+                validate_email(email)
+
+            except ValidationError:
+                error = (
+                    "Enter a valid email address."
+                )
+
+        if error is None:
+
+            duplicate_email = (
+                Customer.objects
+                .filter(email__iexact=email)
+                .exclude(id=customer.id)
+                .exists()
+            )
+
+            if duplicate_email:
+                error = (
+                    "Another customer already uses "
+                    "this email address."
+                )
+
+        if error is None:
+
+            if not phone:
+                error = "Phone number is required."
+
+            elif not phone.isdigit():
+                error = (
+                    "Phone number should contain "
+                    "only digits."
+                )
+
+            elif len(phone) != 10:
+                error = (
+                    "Phone number must contain "
+                    "exactly 10 digits."
+                )
+
+        if error is None:
+
+            if not address:
+                error = "Address is required."
+
+            elif len(address) < 5:
+                error = (
+                    "Please enter a valid address."
+                )
+
+        if error is None:
+
+            customer.name = name
+            customer.email = email
+            customer.phone = phone
+            customer.address = address
+
+            customer.save()
+
+            messages.success(
+                request,
+                "Customer updated successfully."
+            )
+
+            return redirect(
+                "customer_list"
+            )
+
+    return render(
+        request,
+        "accounts/edit_customer.html",
+        {
+            "customer": customer,
+            "error": error
+        }
+    )
 def delete_customer(request, customer_id):
 
     customer = get_object_or_404(

@@ -3,7 +3,6 @@ from . import views
 
 
 urlpatterns = [
-
     path(
         "login/admin/",
         views.admin_login,
@@ -62,6 +61,12 @@ urlpatterns = [
         "customers/add/",
         views.add_customer,
         name="add_customer"
+    ),
+
+    path(
+        "customers/<int:customer_id>/edit/",
+        views.edit_customer,
+        name="edit_customer"
     ),
 
     path(

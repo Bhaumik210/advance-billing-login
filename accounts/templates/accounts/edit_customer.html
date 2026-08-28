@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Edit Customer</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 20px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 {
+            font-size: 21px;
+        }
+
+        .navbar a {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 650px;
+            margin: 45px auto;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            margin-bottom: 7px;
+        }
+
+        .page-header p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .form-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 32px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .save-btn {
+            flex: 1;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .cancel-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            color: #374151;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .cancel-btn:hover {
+            background: #f9fafb;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="navbar">
+
+    <h2>
+        Advance Billing System
+    </h2>
+
+    <a href="{% url 'customer_list' %}">
+        Back to Customers
+    </a>
+
+</div>
+
+<div class="container">
+
+    <div class="page-header">
+
+        <h1>Edit Customer</h1>
+
+        <p>
+            Update customer information below.
+        </p>
+
+    </div>
+
+    <div class="form-card">
+
+        {% if error %}
+
+            <div class="error-message">
+                {{ error }}
+            </div>
+
+        {% endif %}
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <div class="form-group">
+
+                <label for="name">
+                    Customer Name
+                </label>
+
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value="{{ customer.name }}"
+                    minlength="2"
+                    pattern="[A-Za-z ]+"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email Address
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value="{{ customer.email }}"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="phone">
+                    Phone Number
+                </label>
+
+                <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value="{{ customer.phone }}"
+                    minlength="10"
+                    maxlength="10"
+                    pattern="[0-9]{10}"
+                    inputmode="numeric"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="address">
+                    Address
+                </label>
+
+                <textarea
+                    id="address"
+                    name="address"
+                    required
+                >{{ customer.address }}</textarea>
+
+            </div>
+
+            <div class="button-row">
+
+                <button
+                    type="submit"
+                    class="save-btn"
+                >
+                    Save Changes
+                </button>
+
+                <a
+                    href="{% url 'customer_list' %}"
+                    class="cancel-btn"
+                >
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

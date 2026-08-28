@@ -1,8 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Customers</title>
 
     <style>
@@ -18,7 +23,7 @@
         }
 
         .navbar {
-            background: white;
+            background: #ffffff;
             padding: 20px 7%;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
@@ -28,14 +33,17 @@
 
         .navbar h2 {
             margin: 0;
+            font-size: 21px;
         }
 
         .add-btn {
             background: #2563eb;
-            color: white;
+            color: #ffffff;
             padding: 10px 16px;
             border-radius: 7px;
             text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
         }
 
         .container {
@@ -44,19 +52,35 @@
             margin: 40px auto;
         }
 
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+
+        .page-header p {
+            color: #6b7280;
+            margin: 0;
+        }
+
         .message {
             background: #ecfdf5;
             color: #047857;
-            padding: 12px;
+            border: 1px solid #a7f3d0;
+            padding: 12px 14px;
             margin-bottom: 20px;
             border-radius: 7px;
+            font-size: 14px;
         }
 
         .card {
-            background: white;
+            background: #ffffff;
             border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            overflow-x: auto;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
         }
 
         table {
@@ -73,15 +97,56 @@
 
         th {
             background: #f9fafb;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .action-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .edit-btn {
+            display: inline-block;
+            background: #2563eb;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .edit-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .delete-form {
+            margin: 0;
         }
 
         .delete-btn {
             background: #dc2626;
-            color: white;
+            color: #ffffff;
             border: none;
             padding: 8px 14px;
             border-radius: 6px;
             cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .delete-btn:hover {
+            background: #b91c1c;
         }
 
         .empty {
@@ -89,95 +154,177 @@
             text-align: center;
             color: #6b7280;
         }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        @media (max-width: 700px) {
+            .navbar {
+                padding: 18px 20px;
+            }
+
+            .container {
+                width: 94%;
+            }
+
+            th,
+            td {
+                white-space: nowrap;
+            }
+        }
     </style>
 </head>
 
 <body>
 
 <div class="navbar">
-    <h2>Advance Billing System</h2>
 
-    <a href="{% url 'add_customer' %}" class="add-btn">
+    <h2>
+        Advance Billing System
+    </h2>
+
+    <a
+        href="{% url 'add_customer' %}"
+        class="add-btn"
+    >
         Add Customer
     </a>
+
 </div>
+
 
 <div class="container">
 
-    <h1>Customers</h1>
-    <p>View and manage customer records.</p>
+    <div class="page-header">
+
+        <h1>
+            Customers
+        </h1>
+
+        <p>
+            View and manage customer records.
+        </p>
+
+    </div>
+
 
     {% if messages %}
+
         {% for message in messages %}
+
             <div class="message">
                 {{ message }}
             </div>
+
         {% endfor %}
+
     {% endif %}
+
 
     <div class="card">
 
         {% if customers %}
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Address</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
+            <table>
 
-            <tbody>
+                <thead>
 
-                {% for customer in customers %}
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Action</th>
+                    </tr>
 
-                <tr>
-                    <td>{{ customer.name }}</td>
-                    <td>{{ customer.email }}</td>
-                    <td>{{ customer.phone }}</td>
-                    <td>{{ customer.address }}</td>
+                </thead>
 
-                    <td>
 
-                        <form
-                            method="POST"
-                            action="{% url 'delete_customer' customer.id %}"
-                            onsubmit="return confirm('Are you sure you want to delete this customer?');"
-                        >
+                <tbody>
 
-                            {% csrf_token %}
+                    {% for customer in customers %}
 
-                            <button
-                                type="submit"
-                                class="delete-btn"
-                            >
-                                Delete
-                            </button>
+                        <tr>
 
-                        </form>
+                            <td>
+                                {{ customer.name }}
+                            </td>
 
-                    </td>
-                </tr>
+                            <td>
+                                {{ customer.email }}
+                            </td>
 
-                {% endfor %}
+                            <td>
+                                {{ customer.phone }}
+                            </td>
 
-            </tbody>
-        </table>
+                            <td>
+                                {{ customer.address }}
+                            </td>
+
+                            <td>
+
+                                <div class="action-cell">
+
+                                    <a
+                                        href="{% url 'edit_customer' customer.id %}"
+                                        class="edit-btn"
+                                    >
+                                        Edit
+                                    </a>
+
+
+                                    <form
+                                        method="POST"
+                                        action="{% url 'delete_customer' customer.id %}"
+                                        class="delete-form"
+                                        onsubmit="return confirm('Are you sure you want to delete this customer?');"
+                                    >
+
+                                        {% csrf_token %}
+
+                                        <button
+                                            type="submit"
+                                            class="delete-btn"
+                                        >
+                                            Delete
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
 
         {% else %}
 
-        <div class="empty">
-            No customers found.
-        </div>
+            <div class="empty">
+                No customers found.
+            </div>
 
         {% endif %}
 
     </div>
 
+
+    <div class="footer">
+        Advance Billing System with QR
+    </div>
+
 </div>
 
 </body>
+
 </html>
