@@ -18,6 +18,10 @@ from django.core.exceptions import ValidationError
 from .models import OTPVerification, DistributorProfile
 
 
+# ---------------------------------------------------------
+# Admin Login
+# ---------------------------------------------------------
+
 @never_cache
 @ensure_csrf_cookie
 def admin_login(request):
@@ -38,7 +42,9 @@ def admin_login(request):
         return render(
             request,
             "accounts/admin_login.html",
-            {"error": "Invalid username or password"}
+            {
+                "error": "Invalid username or password"
+            }
         )
 
     return render(
@@ -46,6 +52,10 @@ def admin_login(request):
         "accounts/admin_login.html"
     )
 
+
+# ---------------------------------------------------------
+# Distributor Login
+# ---------------------------------------------------------
 
 @never_cache
 @ensure_csrf_cookie
@@ -62,12 +72,17 @@ def distributor_login(request):
 
         if user is not None:
             login(request, user)
-            return redirect("distributor_profile")
+
+            return redirect(
+                "distributor_profile"
+            )
 
         return render(
             request,
             "accounts/distributor_login.html",
-            {"error": "Invalid username or password"}
+            {
+                "error": "Invalid username or password"
+            }
         )
 
     return render(
@@ -75,6 +90,10 @@ def distributor_login(request):
         "accounts/distributor_login.html"
     )
 
+
+# ---------------------------------------------------------
+# Distributor Registration
+# ---------------------------------------------------------
 
 def distributor_register(request):
     error = None
@@ -86,6 +105,7 @@ def distributor_register(request):
     }
 
     if request.method == "POST":
+
         full_name = request.POST.get(
             "name",
             ""
@@ -117,13 +137,19 @@ def distributor_register(request):
             error = "Full name is required."
 
         elif len(full_name) < 2:
-            error = "Full name must contain at least 2 characters."
+            error = (
+                "Full name must contain "
+                "at least 2 characters."
+            )
 
         elif not re.fullmatch(
             r"[A-Za-z ]+",
             full_name
         ):
-            error = "Full name should contain only letters and spaces."
+            error = (
+                "Full name should contain "
+                "only letters and spaces."
+            )
 
         # Email validation
         elif not email:
@@ -132,51 +158,89 @@ def distributor_register(request):
         else:
             try:
                 validate_email(email)
+
             except ValidationError:
-                error = "Enter a valid email address."
+                error = (
+                    "Enter a valid email address."
+                )
 
         # Phone validation
         if error is None:
+
             if not phone:
                 error = "Phone number is required."
 
             elif not phone.isdigit():
-                error = "Phone number should contain only digits."
+                error = (
+                    "Phone number should "
+                    "contain only digits."
+                )
 
             elif len(phone) != 10:
-                error = "Phone number must contain exactly 10 digits."
+                error = (
+                    "Phone number must contain "
+                    "exactly 10 digits."
+                )
 
         # Password validation
         if error is None:
+
             if not password:
                 error = "Password is required."
 
             elif len(password) < 8:
-                error = "Password must be at least 8 characters long."
+                error = (
+                    "Password must be at least "
+                    "8 characters long."
+                )
 
-            elif not re.search(r"[A-Z]", password):
-                error = "Password must contain at least one uppercase letter."
+            elif not re.search(
+                r"[A-Z]",
+                password
+            ):
+                error = (
+                    "Password must contain at least "
+                    "one uppercase letter."
+                )
 
-            elif not re.search(r"[a-z]", password):
-                error = "Password must contain at least one lowercase letter."
+            elif not re.search(
+                r"[a-z]",
+                password
+            ):
+                error = (
+                    "Password must contain at least "
+                    "one lowercase letter."
+                )
 
-            elif not re.search(r"[0-9]", password):
-                error = "Password must contain at least one number."
+            elif not re.search(
+                r"[0-9]",
+                password
+            ):
+                error = (
+                    "Password must contain "
+                    "at least one number."
+                )
 
         # Duplicate email validation
         if error is None:
+
             if User.objects.filter(
                 username=email
             ).exists():
-                error = "This email is already registered."
+                error = (
+                    "This email is already registered."
+                )
 
             elif User.objects.filter(
                 email=email
             ).exists():
-                error = "This email is already registered."
+                error = (
+                    "This email is already registered."
+                )
 
-        # Save registration
+        # Save distributor in database
         if error is None:
+
             name_parts = full_name.split(
                 " ",
                 1
@@ -190,6 +254,7 @@ def distributor_register(request):
                 last_name = ""
 
             with transaction.atomic():
+
                 user = User.objects.create_user(
                     username=email,
                     email=email,
@@ -205,7 +270,8 @@ def distributor_register(request):
 
             messages.success(
                 request,
-                "Registration successful. Please login to continue."
+                "Registration successful. "
+                "Please login to continue."
             )
 
             return redirect(
@@ -222,29 +288,38 @@ def distributor_register(request):
     )
 
 
+# ---------------------------------------------------------
+# Generate OTP
+# ---------------------------------------------------------
+
 def generate_otp(request):
     message = None
 
     if request.method == "POST":
+
         email = request.POST.get(
             "email",
             ""
         ).strip()
 
         if email:
+
             expiry_time = (
                 timezone.now()
                 - timedelta(minutes=5)
             )
 
+            # Remove expired OTP records
             OTPVerification.objects.filter(
                 created_at__lt=expiry_time
             ).delete()
 
+            # Remove previous OTP for same email
             OTPVerification.objects.filter(
                 email=email
             ).delete()
 
+            # Generate 6 digit OTP
             otp_code = str(
                 random.randint(
                     100000,
@@ -252,20 +327,25 @@ def generate_otp(request):
                 )
             )
 
+            # Store OTP in database
             OTPVerification.objects.create(
                 email=email,
                 otp_code=otp_code
             )
 
+            # Store email in session
             request.session[
                 "otp_email"
             ] = email
 
+            # Development/testing output
             print(
                 f"OTP for {email}: {otp_code}"
             )
 
-            message = "OTP generated successfully."
+            message = (
+                "OTP generated successfully."
+            )
 
     return render(
         request,
@@ -276,11 +356,16 @@ def generate_otp(request):
     )
 
 
+# ---------------------------------------------------------
+# Verify OTP
+# ---------------------------------------------------------
+
 def verify_otp(request):
     message = None
     error = None
 
     if request.method == "POST":
+
         otp_code = request.POST.get(
             "otp",
             ""
@@ -291,9 +376,13 @@ def verify_otp(request):
         )
 
         if not email:
-            error = "Please generate an OTP first."
+
+            error = (
+                "Please generate an OTP first."
+            )
 
         else:
+
             otp_record = (
                 OTPVerification.objects
                 .filter(email=email)
@@ -302,12 +391,14 @@ def verify_otp(request):
             )
 
             if otp_record is None:
+
                 error = (
                     "OTP not found. "
                     "Please generate a new OTP."
                 )
 
             elif otp_record.is_expired():
+
                 otp_record.delete()
 
                 error = (
@@ -316,6 +407,7 @@ def verify_otp(request):
                 )
 
             elif otp_record.otp_code == otp_code:
+
                 otp_record.delete()
 
                 request.session.pop(
@@ -323,9 +415,12 @@ def verify_otp(request):
                     None
                 )
 
-                message = "OTP verified successfully."
+                message = (
+                    "OTP verified successfully."
+                )
 
             else:
+
                 error = "Invalid OTP."
 
     return render(
@@ -338,6 +433,10 @@ def verify_otp(request):
     )
 
 
+# ---------------------------------------------------------
+# Forgot Password
+# ---------------------------------------------------------
+
 def forgot_password(request):
     return render(
         request,
@@ -345,10 +444,15 @@ def forgot_password(request):
     )
 
 
+# ---------------------------------------------------------
+# Distributor Profile
+# ---------------------------------------------------------
+
 @login_required(
     login_url="distributor_login"
 )
 def distributor_profile(request):
+
     phone = "Not added"
 
     try:
@@ -369,6 +473,159 @@ def distributor_profile(request):
         }
     )
 
+
+# ---------------------------------------------------------
+# Add Customer
+# ---------------------------------------------------------
+
+def add_customer(request):
+    error = None
+    success = None
+
+    form_data = {
+        "name": "",
+        "email": "",
+        "phone": "",
+        "address": ""
+    }
+
+    if request.method == "POST":
+
+        name = request.POST.get(
+            "name",
+            ""
+        ).strip()
+
+        email = request.POST.get(
+            "email",
+            ""
+        ).strip()
+
+        phone = request.POST.get(
+            "phone",
+            ""
+        ).strip()
+
+        address = request.POST.get(
+            "address",
+            ""
+        ).strip()
+
+        form_data = {
+            "name": name,
+            "email": email,
+            "phone": phone,
+            "address": address
+        }
+
+        # Name validation
+        if not name:
+
+            error = (
+                "Customer name is required."
+            )
+
+        elif len(name) < 2:
+
+            error = (
+                "Customer name must contain "
+                "at least 2 characters."
+            )
+
+        elif not re.fullmatch(
+            r"[A-Za-z ]+",
+            name
+        ):
+
+            error = (
+                "Customer name should contain "
+                "only letters and spaces."
+            )
+
+        # Email validation
+        elif not email:
+
+            error = (
+                "Email address is required."
+            )
+
+        else:
+
+            try:
+                validate_email(email)
+
+            except ValidationError:
+
+                error = (
+                    "Enter a valid email address."
+                )
+
+        # Phone validation
+        if error is None:
+
+            if not phone:
+
+                error = (
+                    "Phone number is required."
+                )
+
+            elif not phone.isdigit():
+
+                error = (
+                    "Phone number should "
+                    "contain only digits."
+                )
+
+            elif len(phone) != 10:
+
+                error = (
+                    "Phone number must contain "
+                    "exactly 10 digits."
+                )
+
+        # Address validation
+        if error is None:
+
+            if not address:
+
+                error = (
+                    "Address is required."
+                )
+
+            elif len(address) < 5:
+
+                error = (
+                    "Please enter a valid address."
+                )
+
+        # Success
+        if error is None:
+
+            success = (
+                "Customer added successfully."
+            )
+
+            form_data = {
+                "name": "",
+                "email": "",
+                "phone": "",
+                "address": ""
+            }
+
+    return render(
+        request,
+        "accounts/add_customer.html",
+        {
+            "error": error,
+            "success": success,
+            "form_data": form_data
+        }
+    )
+
+
+# ---------------------------------------------------------
+# Dashboard
+# ---------------------------------------------------------
 
 @login_required
 def dashboard(request):

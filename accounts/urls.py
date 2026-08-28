@@ -46,6 +46,12 @@ urlpatterns = [
     ),
 
     path(
+        "customers/add/",
+        views.add_customer,
+        name="add_customer"
+    ),
+
+    path(
         "dashboard/",
         views.dashboard,
         name="dashboard"
