@@ -65,6 +65,16 @@
             font-size: 14px;
         }
 
+        .success-message {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
         .profile-card {
             background: #ffffff;
             border: 1px solid #e5e7eb;
@@ -86,7 +96,7 @@
             height: 70px;
             border-radius: 50%;
             background: #2563eb;
-            color: white;
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -97,6 +107,7 @@
         .profile-title h2 {
             font-size: 22px;
             margin-bottom: 5px;
+            color: #111827;
         }
 
         .profile-title p {
@@ -140,6 +151,33 @@
             font-weight: 600;
         }
 
+        .profile-actions {
+            padding: 0 32px 30px 32px;
+        }
+
+        .edit-btn {
+            display: inline-block;
+            background: #2563eb;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 11px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+
+        .edit-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
         @media (max-width: 600px) {
             .navbar {
                 padding: 0 20px;
@@ -161,9 +199,18 @@
                 padding: 20px 24px;
             }
 
+            .profile-actions {
+                padding: 0 24px 24px 24px;
+            }
+
             .detail-row {
                 grid-template-columns: 1fr;
                 gap: 7px;
+            }
+
+            .edit-btn {
+                width: 100%;
+                text-align: center;
             }
         }
     </style>
@@ -173,7 +220,9 @@
 
 <nav class="navbar">
 
-    <h2>Advance Billing System</h2>
+    <h2>
+        Advance Billing System
+    </h2>
 
     <span>
         Distributor Portal
@@ -185,13 +234,27 @@
 
     <div class="page-header">
 
-        <h1>Distributor Profile</h1>
+        <h1>
+            Distributor Profile
+        </h1>
 
         <p>
-            View your distributor account information.
+            View and manage your distributor account information.
         </p>
 
     </div>
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div class="success-message">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
 
     <div class="profile-card">
 
@@ -204,14 +267,22 @@
             <div class="profile-title">
 
                 <h2>
+
                     {% if request.user.get_full_name %}
+
                         {{ request.user.get_full_name }}
+
                     {% else %}
+
                         {{ request.user.username }}
+
                     {% endif %}
+
                 </h2>
 
-                <p>Distributor Account</p>
+                <p>
+                    Distributor Account
+                </p>
 
             </div>
 
@@ -226,11 +297,17 @@
                 </div>
 
                 <div class="value">
+
                     {% if request.user.get_full_name %}
+
                         {{ request.user.get_full_name }}
+
                     {% else %}
+
                         Not added
+
                     {% endif %}
+
                 </div>
 
             </div>
@@ -254,11 +331,29 @@
                 </div>
 
                 <div class="value">
+
                     {% if request.user.email %}
+
                         {{ request.user.email }}
+
                     {% else %}
+
                         Not added
+
                     {% endif %}
+
+                </div>
+
+            </div>
+
+            <div class="detail-row">
+
+                <div class="label">
+                    Phone Number
+                </div>
+
+                <div class="value">
+                    {{ phone }}
                 </div>
 
             </div>
@@ -282,9 +377,11 @@
                 </div>
 
                 <div class="value">
+
                     <span class="status">
                         Active
                     </span>
+
                 </div>
 
             </div>
@@ -303,6 +400,21 @@
 
         </div>
 
+        <div class="profile-actions">
+
+            <a
+                href="{% url 'edit_distributor_profile' %}"
+                class="edit-btn"
+            >
+                Edit Profile
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+        Advance Billing System with QR
     </div>
 
 </div>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Edit Distributor Profile</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            min-height: 100vh;
+            color: #1f2937;
+        }
+
+        .navbar {
+            height: 70px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8%;
+        }
+
+        .navbar h2 {
+            font-size: 21px;
+        }
+
+        .navbar a {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 620px;
+            margin: 45px auto;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            margin-bottom: 7px;
+        }
+
+        .page-header p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .form-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 32px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 5px;
+        }
+
+        .save-btn {
+            flex: 1;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .cancel-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #374151;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .cancel-btn:hover {
+            background: #f9fafb;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <h2>
+        Advance Billing System
+    </h2>
+
+    <a href="{% url 'distributor_profile' %}">
+        Back to Profile
+    </a>
+
+</nav>
+
+<div class="container">
+
+    <div class="page-header">
+
+        <h1>Edit Profile</h1>
+
+        <p>
+            Update your distributor account information.
+        </p>
+
+    </div>
+
+    <div class="form-card">
+
+        {% if error %}
+
+            <div class="error-message">
+                {{ error }}
+            </div>
+
+        {% endif %}
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <div class="form-group">
+
+                <label for="name">
+                    Full Name
+                </label>
+
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value="{{ request.user.get_full_name }}"
+                    minlength="2"
+                    pattern="[A-Za-z ]+"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email Address
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value="{{ request.user.email }}"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="phone">
+                    Phone Number
+                </label>
+
+                <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value="{{ profile.phone }}"
+                    maxlength="10"
+                    minlength="10"
+                    pattern="[0-9]{10}"
+                    inputmode="numeric"
+                    required
+                >
+
+            </div>
+
+            <div class="button-row">
+
+                <button
+                    type="submit"
+                    class="save-btn"
+                >
+                    Save Changes
+                </button>
+
+                <a
+                    href="{% url 'distributor_profile' %}"
+                    class="cancel-btn"
+                >
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <div class="footer">
+        Advance Billing System with QR
+    </div>
+
+</div>
+
+</body>
+</html>

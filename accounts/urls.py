@@ -3,6 +3,7 @@ from . import views
 
 
 urlpatterns = [
+
     path(
         "login/admin/",
         views.admin_login,
@@ -43,6 +44,12 @@ urlpatterns = [
         "distributor/profile/",
         views.distributor_profile,
         name="distributor_profile"
+    ),
+
+    path(
+        "distributor/profile/edit/",
+        views.edit_distributor_profile,
+        name="edit_distributor_profile"
     ),
 
     path(
