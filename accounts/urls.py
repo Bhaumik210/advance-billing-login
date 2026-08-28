@@ -40,6 +40,12 @@ urlpatterns = [
     ),
 
     path(
+        "distributor/profile/",
+        views.distributor_profile,
+        name="distributor_profile"
+    ),
+
+    path(
         "dashboard/",
         views.dashboard,
         name="dashboard"

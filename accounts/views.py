@@ -52,7 +52,7 @@ def distributor_login(request):
 
         if user is not None:
             login(request, user)
-            return redirect("dashboard")
+            return redirect("distributor_profile")
 
         return render(
             request,
@@ -60,7 +60,10 @@ def distributor_login(request):
             {"error": "Invalid username or password"}
         )
 
-    return render(request, "accounts/distributor_login.html")
+    return render(
+        request,
+        "accounts/distributor_login.html"
+    )
 
 
 def distributor_register(request):
@@ -177,6 +180,14 @@ def forgot_password(request):
     return render(
         request,
         "accounts/forgot_password.html"
+    )
+
+
+@login_required(login_url="distributor_login")
+def distributor_profile(request):
+    return render(
+        request,
+        "accounts/distributor_profile.html"
     )
 
 

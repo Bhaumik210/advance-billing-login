@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Distributor Profile</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            min-height: 100vh;
+            color: #1f2937;
+        }
+
+        .navbar {
+            height: 70px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8%;
+        }
+
+        .navbar h2 {
+            font-size: 21px;
+            color: #1f2937;
+        }
+
+        .navbar span {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 850px;
+            margin: 50px auto;
+        }
+
+        .page-header {
+            margin-bottom: 25px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            margin-bottom: 7px;
+        }
+
+        .page-header p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .profile-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        }
+
+        .profile-top {
+            padding: 28px 32px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .profile-title h2 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .profile-title p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .profile-details {
+            padding: 30px 32px;
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            padding: 16px 0;
+            border-bottom: 1px solid #f0f1f3;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .value {
+            font-size: 15px;
+            color: #111827;
+        }
+
+        .status {
+            display: inline-block;
+            background: #ecfdf5;
+            color: #047857;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 0 20px;
+            }
+
+            .navbar span {
+                display: none;
+            }
+
+            .container {
+                margin-top: 30px;
+            }
+
+            .profile-top {
+                padding: 24px;
+            }
+
+            .profile-details {
+                padding: 20px 24px;
+            }
+
+            .detail-row {
+                grid-template-columns: 1fr;
+                gap: 7px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <h2>Advance Billing System</h2>
+
+    <span>
+        Distributor Portal
+    </span>
+
+</nav>
+
+<div class="container">
+
+    <div class="page-header">
+
+        <h1>Distributor Profile</h1>
+
+        <p>
+            View your distributor account information.
+        </p>
+
+    </div>
+
+    <div class="profile-card">
+
+        <div class="profile-top">
+
+            <div class="avatar">
+                {{ request.user.username|first|upper }}
+            </div>
+
+            <div class="profile-title">
+
+                <h2>
+                    {% if request.user.get_full_name %}
+                        {{ request.user.get_full_name }}
+                    {% else %}
+                        {{ request.user.username }}
+                    {% endif %}
+                </h2>
+
+                <p>Distributor Account</p>
+
+            </div>
+
+        </div>
+
+        <div class="profile-details">
+
+            <div class="detail-row">
+
+                <div class="label">
+                    Full Name
+                </div>
+
+                <div class="value">
+                    {% if request.user.get_full_name %}
+                        {{ request.user.get_full_name }}
+                    {% else %}
+                        Not added
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <div class="detail-row">
+
+                <div class="label">
+                    Username
+                </div>
+
+                <div class="value">
+                    {{ request.user.username }}
+                </div>
+
+            </div>
+
+            <div class="detail-row">
+
+                <div class="label">
+                    Email Address
+                </div>
+
+                <div class="value">
+                    {% if request.user.email %}
+                        {{ request.user.email }}
+                    {% else %}
+                        Not added
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <div class="detail-row">
+
+                <div class="label">
+                    Account Type
+                </div>
+
+                <div class="value">
+                    Distributor
+                </div>
+
+            </div>
+
+            <div class="detail-row">
+
+                <div class="label">
+                    Account Status
+                </div>
+
+                <div class="value">
+                    <span class="status">
+                        Active
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="detail-row">
+
+                <div class="label">
+                    Joined On
+                </div>
+
+                <div class="value">
+                    {{ request.user.date_joined|date:"d M Y" }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
