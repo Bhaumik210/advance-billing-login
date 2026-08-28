@@ -1,6 +1,8 @@
-from django.db import models
-from django.utils import timezone
 from datetime import timedelta
+
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class OTPVerification(models.Model):
@@ -13,3 +15,22 @@ class OTPVerification(models.Model):
 
     def __str__(self):
         return self.email
+
+
+class DistributorProfile(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="distributor_profile"
+    )
+
+    phone = models.CharField(
+        max_length=10
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.user.email

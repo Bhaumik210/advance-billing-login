@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Distributor Registration</title>
 
     <style>
@@ -39,8 +44,8 @@
         }
 
         .brand p {
-            font-size: 14px;
             color: #6b7280;
+            font-size: 14px;
         }
 
         .register-card {
@@ -62,16 +67,25 @@
         }
 
         .register-header p {
-            font-size: 14px;
             color: #6b7280;
-            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .error {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            padding: 11px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 14px;
         }
 
         .form-group {
             margin-bottom: 18px;
         }
 
-        .form-group label {
+        label {
             display: block;
             margin-bottom: 7px;
             font-size: 14px;
@@ -79,22 +93,21 @@
             color: #374151;
         }
 
-        .form-group input {
+        input {
             width: 100%;
             padding: 12px 14px;
             border: 1px solid #d1d5db;
             border-radius: 8px;
             font-size: 15px;
             outline: none;
-            transition: 0.2s ease;
         }
 
-        .form-group input:focus {
+        input:focus {
             border-color: #2563eb;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
         }
 
-        .register-btn {
+        button {
             width: 100%;
             padding: 13px;
             border: none;
@@ -104,18 +117,17 @@
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: 0.2s ease;
         }
 
-        .register-btn:hover {
+        button:hover {
             background: #1d4ed8;
         }
 
         .login-link {
             margin-top: 22px;
             text-align: center;
-            font-size: 14px;
             color: #6b7280;
+            font-size: 14px;
         }
 
         .login-link a {
@@ -124,25 +136,11 @@
             font-weight: 600;
         }
 
-        .login-link a:hover {
-            text-decoration: underline;
-        }
-
-        .footer-text {
+        .footer {
             text-align: center;
             margin-top: 18px;
             color: #9ca3af;
             font-size: 12px;
-        }
-
-        @media (max-width: 500px) {
-            .register-card {
-                padding: 24px;
-            }
-
-            .brand h1 {
-                font-size: 24px;
-            }
         }
     </style>
 </head>
@@ -160,14 +158,27 @@
 
         <div class="register-header">
             <h2>Distributor Registration</h2>
-            <p>Create your distributor account to access the billing system.</p>
+
+            <p>
+                Create your distributor account.
+            </p>
         </div>
 
+        {% if error %}
+            <div class="error">
+                {{ error }}
+            </div>
+        {% endif %}
+
         <form method="POST">
+
             {% csrf_token %}
 
             <div class="form-group">
-                <label for="name">Full Name</label>
+                <label for="name">
+                    Full Name
+                </label>
+
                 <input
                     type="text"
                     id="name"
@@ -178,7 +189,10 @@
             </div>
 
             <div class="form-group">
-                <label for="email">Email Address</label>
+                <label for="email">
+                    Email Address
+                </label>
+
                 <input
                     type="email"
                     id="email"
@@ -189,7 +203,10 @@
             </div>
 
             <div class="form-group">
-                <label for="phone">Phone Number</label>
+                <label for="phone">
+                    Phone Number
+                </label>
+
                 <input
                     type="tel"
                     id="phone"
@@ -202,7 +219,10 @@
             </div>
 
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">
+                    Password
+                </label>
+
                 <input
                     type="password"
                     id="password"
@@ -212,7 +232,7 @@
                 >
             </div>
 
-            <button type="submit" class="register-btn">
+            <button type="submit">
                 Register Distributor
             </button>
 
@@ -220,6 +240,7 @@
 
         <div class="login-link">
             Already registered?
+
             <a href="{% url 'distributor_login' %}">
                 Distributor Login
             </a>
@@ -227,7 +248,7 @@
 
     </div>
 
-    <div class="footer-text">
+    <div class="footer">
         Advance Billing System with QR
     </div>
 

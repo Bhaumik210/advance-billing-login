@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Distributor Login</title>
 
     <style>
@@ -47,8 +48,8 @@
             background: #ffffff;
             border-radius: 14px;
             padding: 32px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             border: 1px solid #e5e7eb;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
         }
 
         .login-header {
@@ -64,6 +65,26 @@
         .login-header p {
             font-size: 14px;
             color: #6b7280;
+        }
+
+        .success-message {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+            padding: 11px 12px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            padding: 11px 12px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 14px;
         }
 
         .form-group {
@@ -110,18 +131,36 @@
             background: #1d4ed8;
         }
 
-        .error-message {
-            background: #fef2f2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
-            padding: 10px 12px;
-            border-radius: 8px;
+        .forgot-password {
+            text-align: right;
+            margin-top: 12px;
+        }
+
+        .forgot-password a {
+            color: #2563eb;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .register-section {
+            margin-top: 22px;
+            text-align: center;
             font-size: 14px;
-            margin-bottom: 18px;
+            color: #6b7280;
+        }
+
+        .register-section a {
+            color: #2563eb;
+            font-weight: 600;
+            text-decoration: none;
         }
 
         .switch-section {
-            margin-top: 22px;
+            margin-top: 14px;
             text-align: center;
             font-size: 14px;
             color: #6b7280;
@@ -133,7 +172,8 @@
             text-decoration: none;
         }
 
-        .switch-section a:hover {
+        .switch-section a:hover,
+        .register-section a:hover {
             text-decoration: underline;
         }
 
@@ -172,6 +212,14 @@
             <p>Sign in to access your distributor account.</p>
         </div>
 
+        {% if messages %}
+            {% for message in messages %}
+                <div class="success-message">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
         {% if error %}
             <div class="error-message">
                 {{ error }}
@@ -179,22 +227,29 @@
         {% endif %}
 
         <form method="POST">
+
             {% csrf_token %}
 
             <div class="form-group">
-                <label for="username">Username</label>
+                <label for="username">
+                    Username / Email
+                </label>
+
                 <input
                     type="text"
                     id="username"
                     name="username"
-                    placeholder="Enter distributor username"
+                    placeholder="Enter username or email"
                     autocomplete="username"
                     required
                 >
             </div>
 
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">
+                    Password
+                </label>
+
                 <input
                     type="password"
                     id="password"
@@ -205,13 +260,32 @@
                 >
             </div>
 
-            <button type="submit" class="login-btn">
+            <button
+                type="submit"
+                class="login-btn"
+            >
                 Sign In as Distributor
             </button>
+
         </form>
+
+        <div class="forgot-password">
+            <a href="{% url 'forgot_password' %}">
+                Forgot Password?
+            </a>
+        </div>
+
+        <div class="register-section">
+            Don't have an account?
+
+            <a href="{% url 'distributor_register' %}">
+                Register Distributor
+            </a>
+        </div>
 
         <div class="switch-section">
             Administrator?
+
             <a href="{% url 'admin_login' %}">
                 Admin Login
             </a>
