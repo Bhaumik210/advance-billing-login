@@ -28,6 +28,7 @@ from django.db.models import Q
 
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 
 from .models import (
     OTPVerification,
@@ -852,13 +853,21 @@ def customer_list(request):
     if search_query:
 
         customers = customers.filter(
-            Q(name__icontains=search_query)
+            Q(
+                name__icontains=search_query
+            )
             |
-            Q(email__icontains=search_query)
+            Q(
+                email__icontains=search_query
+            )
             |
-            Q(phone__icontains=search_query)
+            Q(
+                phone__icontains=search_query
+            )
             |
-            Q(address__icontains=search_query)
+            Q(
+                address__icontains=search_query
+            )
         )
 
     customers = customers.order_by(
@@ -1266,6 +1275,61 @@ def add_product(request):
         {
             "error": error,
             "form_data": form_data
+        }
+    )
+
+
+@login_required(
+    login_url="distributor_login"
+)
+def product_list(request):
+
+    search_query = request.GET.get(
+        "search",
+        ""
+    ).strip()
+
+    products = Product.objects.all()
+
+    if search_query:
+
+        products = products.filter(
+            Q(
+                name__icontains=search_query
+            )
+            |
+            Q(
+                category__icontains=search_query
+            )
+            |
+            Q(
+                description__icontains=search_query
+            )
+        )
+
+    products = products.order_by(
+        "-created_at"
+    )
+
+    paginator = Paginator(
+        products,
+        5
+    )
+
+    page_number = request.GET.get(
+        "page"
+    )
+
+    page_obj = paginator.get_page(
+        page_number
+    )
+
+    return render(
+        request,
+        "accounts/product_list.html",
+        {
+            "page_obj": page_obj,
+            "search_query": search_query
         }
     )
 
