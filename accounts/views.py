@@ -107,9 +107,7 @@ def generate_otp(request):
     return render(
         request,
         "accounts/otp_generate.html",
-        {
-            "message": message
-        }
+        {"message": message}
     )
 
 
@@ -160,9 +158,7 @@ def verify_otp(request):
                     None
                 )
 
-                message = (
-                    "OTP verified successfully."
-                )
+                message = "OTP verified successfully."
 
             else:
                 error = "Invalid OTP."
@@ -174,6 +170,13 @@ def verify_otp(request):
             "message": message,
             "error": error
         }
+    )
+
+
+def forgot_password(request):
+    return render(
+        request,
+        "accounts/forgot_password.html"
     )
 
 
