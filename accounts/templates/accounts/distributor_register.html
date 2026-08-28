@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
 
@@ -57,12 +58,12 @@
         }
 
         .register-header {
-            margin-bottom: 25px;
+            margin-bottom: 24px;
         }
 
         .register-header h2 {
-            font-size: 24px;
             color: #111827;
+            font-size: 24px;
             margin-bottom: 6px;
         }
 
@@ -71,11 +72,11 @@
             font-size: 14px;
         }
 
-        .error {
+        .error-message {
             background: #fef2f2;
             color: #b91c1c;
             border: 1px solid #fecaca;
-            padding: 11px;
+            padding: 11px 12px;
             border-radius: 8px;
             margin-bottom: 18px;
             font-size: 14px;
@@ -87,10 +88,10 @@
 
         label {
             display: block;
-            margin-bottom: 7px;
+            color: #374151;
             font-size: 14px;
             font-weight: 600;
-            color: #374151;
+            margin-bottom: 7px;
         }
 
         input {
@@ -105,6 +106,14 @@
         input:focus {
             border-color: #2563eb;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        .help-text {
+            display: block;
+            margin-top: 6px;
+            color: #6b7280;
+            font-size: 12px;
+            line-height: 1.4;
         }
 
         button {
@@ -157,17 +166,21 @@
     <div class="register-card">
 
         <div class="register-header">
+
             <h2>Distributor Registration</h2>
 
             <p>
                 Create your distributor account.
             </p>
+
         </div>
 
         {% if error %}
-            <div class="error">
+
+            <div class="error-message">
                 {{ error }}
             </div>
+
         {% endif %}
 
         <form method="POST">
@@ -175,6 +188,7 @@
             {% csrf_token %}
 
             <div class="form-group">
+
                 <label for="name">
                     Full Name
                 </label>
@@ -183,12 +197,18 @@
                     type="text"
                     id="name"
                     name="name"
+                    value="{{ form_data.name }}"
                     placeholder="Enter full name"
+                    minlength="2"
+                    pattern="[A-Za-z ]+"
+                    title="Use letters and spaces only"
                     required
                 >
+
             </div>
 
             <div class="form-group">
+
                 <label for="email">
                     Email Address
                 </label>
@@ -197,12 +217,15 @@
                     type="email"
                     id="email"
                     name="email"
+                    value="{{ form_data.email }}"
                     placeholder="Enter email address"
                     required
                 >
+
             </div>
 
             <div class="form-group">
+
                 <label for="phone">
                     Phone Number
                 </label>
@@ -211,14 +234,20 @@
                     type="tel"
                     id="phone"
                     name="phone"
-                    placeholder="Enter phone number"
+                    value="{{ form_data.phone }}"
+                    placeholder="Enter 10-digit phone number"
+                    minlength="10"
                     maxlength="10"
                     pattern="[0-9]{10}"
+                    inputmode="numeric"
+                    title="Phone number must contain exactly 10 digits"
                     required
                 >
+
             </div>
 
             <div class="form-group">
+
                 <label for="password">
                     Password
                 </label>
@@ -228,8 +257,15 @@
                     id="password"
                     name="password"
                     placeholder="Create password"
+                    minlength="8"
                     required
                 >
+
+                <span class="help-text">
+                    Minimum 8 characters with uppercase,
+                    lowercase and a number.
+                </span>
+
             </div>
 
             <button type="submit">
@@ -239,11 +275,13 @@
         </form>
 
         <div class="login-link">
+
             Already registered?
 
             <a href="{% url 'distributor_login' %}">
                 Distributor Login
             </a>
+
         </div>
 
     </div>
