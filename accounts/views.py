@@ -23,6 +23,7 @@ from django.views.decorators.cache import never_cache
 
 from django.utils import timezone
 from django.db import transaction
+from django.db.models import Q
 
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
@@ -39,6 +40,7 @@ from .models import (
 def admin_login(request):
 
     if request.method == "POST":
+
         username = request.POST.get(
             "username",
             ""
@@ -56,14 +58,22 @@ def admin_login(request):
         )
 
         if user is not None:
-            login(request, user)
-            return redirect("dashboard")
+
+            login(
+                request,
+                user
+            )
+
+            return redirect(
+                "dashboard"
+            )
 
         return render(
             request,
             "accounts/admin_login.html",
             {
-                "error": "Invalid username or password"
+                "error":
+                "Invalid username or password"
             }
         )
 
@@ -92,6 +102,7 @@ def distributor_login(request):
         username = login_value
 
         try:
+
             user_by_email = User.objects.get(
                 email__iexact=login_value
             )
@@ -108,7 +119,11 @@ def distributor_login(request):
         )
 
         if user is not None:
-            login(request, user)
+
+            login(
+                request,
+                user
+            )
 
             return redirect(
                 "distributor_profile"
@@ -118,7 +133,8 @@ def distributor_login(request):
             request,
             "accounts/distributor_login.html",
             {
-                "error": "Invalid username or password"
+                "error":
+                "Invalid username or password"
             }
         )
 
@@ -167,9 +183,11 @@ def distributor_register(request):
         }
 
         if not full_name:
+
             error = "Full name is required."
 
         elif len(full_name) < 2:
+
             error = (
                 "Full name must contain "
                 "at least 2 characters."
@@ -179,19 +197,28 @@ def distributor_register(request):
             r"[A-Za-z ]+",
             full_name
         ):
+
             error = (
                 "Full name should contain "
                 "only letters and spaces."
             )
 
         elif not email:
-            error = "Email address is required."
+
+            error = (
+                "Email address is required."
+            )
 
         else:
+
             try:
-                validate_email(email)
+
+                validate_email(
+                    email
+                )
 
             except ValidationError:
+
                 error = (
                     "Enter a valid email address."
                 )
@@ -199,15 +226,20 @@ def distributor_register(request):
         if error is None:
 
             if not phone:
-                error = "Phone number is required."
+
+                error = (
+                    "Phone number is required."
+                )
 
             elif not phone.isdigit():
+
                 error = (
                     "Phone number should contain "
                     "only digits."
                 )
 
             elif len(phone) != 10:
+
                 error = (
                     "Phone number must contain "
                     "exactly 10 digits."
@@ -216,9 +248,13 @@ def distributor_register(request):
         if error is None:
 
             if not password:
-                error = "Password is required."
+
+                error = (
+                    "Password is required."
+                )
 
             elif len(password) < 8:
+
                 error = (
                     "Password must be at least "
                     "8 characters long."
@@ -228,6 +264,7 @@ def distributor_register(request):
                 r"[A-Z]",
                 password
             ):
+
                 error = (
                     "Password must contain "
                     "at least one uppercase letter."
@@ -237,6 +274,7 @@ def distributor_register(request):
                 r"[a-z]",
                 password
             ):
+
                 error = (
                     "Password must contain "
                     "at least one lowercase letter."
@@ -246,6 +284,7 @@ def distributor_register(request):
                 r"[0-9]",
                 password
             ):
+
                 error = (
                     "Password must contain "
                     "at least one number."
@@ -256,6 +295,7 @@ def distributor_register(request):
             if User.objects.filter(
                 username=email
             ).exists():
+
                 error = (
                     "This email is already registered."
                 )
@@ -263,6 +303,7 @@ def distributor_register(request):
             elif User.objects.filter(
                 email=email
             ).exists():
+
                 error = (
                     "This email is already registered."
                 )
@@ -277,9 +318,11 @@ def distributor_register(request):
             first_name = name_parts[0]
 
             if len(name_parts) > 1:
+
                 last_name = name_parts[1]
 
             else:
+
                 last_name = ""
 
             with transaction.atomic():
@@ -393,6 +436,7 @@ def verify_otp(request):
         )
 
         if not email:
+
             error = (
                 "Please generate an OTP first."
             )
@@ -407,6 +451,7 @@ def verify_otp(request):
             )
 
             if otp_record is None:
+
                 error = (
                     "OTP not found. "
                     "Please generate a new OTP."
@@ -435,7 +480,10 @@ def verify_otp(request):
                 )
 
             else:
-                error = "Invalid OTP."
+
+                error = (
+                    "Invalid OTP."
+                )
 
     return render(
         request,
@@ -463,6 +511,7 @@ def distributor_profile(request):
     phone = "Not added"
 
     try:
+
         phone = (
             request.user
             .distributor_profile
@@ -470,6 +519,7 @@ def distributor_profile(request):
         )
 
     except DistributorProfile.DoesNotExist:
+
         pass
 
     return render(
@@ -518,9 +568,13 @@ def edit_distributor_profile(request):
         ).strip()
 
         if not full_name:
-            error = "Full name is required."
+
+            error = (
+                "Full name is required."
+            )
 
         elif len(full_name) < 2:
+
             error = (
                 "Full name must contain "
                 "at least 2 characters."
@@ -530,19 +584,28 @@ def edit_distributor_profile(request):
             r"[A-Za-z ]+",
             full_name
         ):
+
             error = (
                 "Full name should contain "
                 "only letters and spaces."
             )
 
         elif not email:
-            error = "Email address is required."
+
+            error = (
+                "Email address is required."
+            )
 
         else:
+
             try:
-                validate_email(email)
+
+                validate_email(
+                    email
+                )
 
             except ValidationError:
+
                 error = (
                     "Enter a valid email address."
                 )
@@ -561,6 +624,7 @@ def edit_distributor_profile(request):
             )
 
             if duplicate_email:
+
                 error = (
                     "This email is already "
                     "used by another account."
@@ -569,15 +633,20 @@ def edit_distributor_profile(request):
         if error is None:
 
             if not phone:
-                error = "Phone number is required."
+
+                error = (
+                    "Phone number is required."
+                )
 
             elif not phone.isdigit():
+
                 error = (
                     "Phone number should "
                     "contain only digits."
                 )
 
             elif len(phone) != 10:
+
                 error = (
                     "Phone number must contain "
                     "exactly 10 digits."
@@ -590,18 +659,26 @@ def edit_distributor_profile(request):
                 1
             )
 
-            user.first_name = name_parts[0]
+            user.first_name = (
+                name_parts[0]
+            )
 
             if len(name_parts) > 1:
-                user.last_name = name_parts[1]
+
+                user.last_name = (
+                    name_parts[1]
+                )
 
             else:
+
                 user.last_name = ""
 
             user.email = email
+
             profile.phone = phone
 
             with transaction.atomic():
+
                 user.save()
                 profile.save()
 
@@ -666,11 +743,13 @@ def add_customer(request):
         }
 
         if not name:
+
             error = (
                 "Customer name is required."
             )
 
         elif len(name) < 2:
+
             error = (
                 "Customer name must contain "
                 "at least 2 characters."
@@ -680,21 +759,28 @@ def add_customer(request):
             r"[A-Za-z ]+",
             name
         ):
+
             error = (
                 "Customer name should contain "
                 "only letters and spaces."
             )
 
         elif not email:
+
             error = (
                 "Email address is required."
             )
 
         else:
+
             try:
-                validate_email(email)
+
+                validate_email(
+                    email
+                )
 
             except ValidationError:
+
                 error = (
                     "Enter a valid email address."
                 )
@@ -702,17 +788,20 @@ def add_customer(request):
         if error is None:
 
             if not phone:
+
                 error = (
                     "Phone number is required."
                 )
 
             elif not phone.isdigit():
+
                 error = (
                     "Phone number should contain "
                     "only digits."
                 )
 
             elif len(phone) != 10:
+
                 error = (
                     "Phone number must contain "
                     "exactly 10 digits."
@@ -721,11 +810,13 @@ def add_customer(request):
         if error is None:
 
             if not address:
+
                 error = (
                     "Address is required."
                 )
 
             elif len(address) < 5:
+
                 error = (
                     "Please enter a valid address."
                 )
@@ -754,35 +845,59 @@ def add_customer(request):
     )
 
 
-# Task 6 - Customer List
-
 @login_required(
     login_url="distributor_login"
 )
 def customer_list(request):
 
-    customers = (
-        Customer.objects
-        .all()
-        .order_by("-created_at")
+    search_query = request.GET.get(
+        "search",
+        ""
+    ).strip()
+
+    customers = Customer.objects.all()
+
+    if search_query:
+
+        customers = customers.filter(
+            Q(
+                name__icontains=search_query
+            )
+            |
+            Q(
+                email__icontains=search_query
+            )
+            |
+            Q(
+                phone__icontains=search_query
+            )
+            |
+            Q(
+                address__icontains=search_query
+            )
+        )
+
+    customers = customers.order_by(
+        "-created_at"
     )
 
     return render(
         request,
         "accounts/customer_list.html",
         {
-            "customers": customers
+            "customers": customers,
+            "search_query": search_query
         }
     )
 
 
-# Task 6 - Delete Customer
-
 @login_required(
     login_url="distributor_login"
 )
-@login_required(login_url="distributor_login")
-def edit_customer(request, customer_id):
+def edit_customer(
+    request,
+    customer_id
+):
 
     customer = get_object_or_404(
         Customer,
@@ -814,9 +929,13 @@ def edit_customer(request, customer_id):
         ).strip()
 
         if not name:
-            error = "Customer name is required."
+
+            error = (
+                "Customer name is required."
+            )
 
         elif len(name) < 2:
+
             error = (
                 "Customer name must contain "
                 "at least 2 characters."
@@ -826,19 +945,28 @@ def edit_customer(request, customer_id):
             r"[A-Za-z ]+",
             name
         ):
+
             error = (
                 "Customer name should contain "
                 "only letters and spaces."
             )
 
         elif not email:
-            error = "Email address is required."
+
+            error = (
+                "Email address is required."
+            )
 
         else:
+
             try:
-                validate_email(email)
+
+                validate_email(
+                    email
+                )
 
             except ValidationError:
+
                 error = (
                     "Enter a valid email address."
                 )
@@ -847,12 +975,17 @@ def edit_customer(request, customer_id):
 
             duplicate_email = (
                 Customer.objects
-                .filter(email__iexact=email)
-                .exclude(id=customer.id)
+                .filter(
+                    email__iexact=email
+                )
+                .exclude(
+                    id=customer.id
+                )
                 .exists()
             )
 
             if duplicate_email:
+
                 error = (
                     "Another customer already uses "
                     "this email address."
@@ -861,15 +994,20 @@ def edit_customer(request, customer_id):
         if error is None:
 
             if not phone:
-                error = "Phone number is required."
+
+                error = (
+                    "Phone number is required."
+                )
 
             elif not phone.isdigit():
+
                 error = (
                     "Phone number should contain "
                     "only digits."
                 )
 
             elif len(phone) != 10:
+
                 error = (
                     "Phone number must contain "
                     "exactly 10 digits."
@@ -878,9 +1016,13 @@ def edit_customer(request, customer_id):
         if error is None:
 
             if not address:
-                error = "Address is required."
+
+                error = (
+                    "Address is required."
+                )
 
             elif len(address) < 5:
+
                 error = (
                     "Please enter a valid address."
                 )
@@ -911,7 +1053,15 @@ def edit_customer(request, customer_id):
             "error": error
         }
     )
-def delete_customer(request, customer_id):
+
+
+@login_required(
+    login_url="distributor_login"
+)
+def delete_customer(
+    request,
+    customer_id
+):
 
     customer = get_object_or_404(
         Customer,
@@ -920,7 +1070,9 @@ def delete_customer(request, customer_id):
 
     if request.method == "POST":
 
-        customer_name = customer.name
+        customer_name = (
+            customer.name
+        )
 
         customer.delete()
 

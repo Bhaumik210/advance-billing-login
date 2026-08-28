@@ -1,13 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customers</title>
 
     <style>
@@ -42,7 +38,6 @@
             padding: 10px 16px;
             border-radius: 7px;
             text-decoration: none;
-            font-size: 14px;
             font-weight: 600;
         }
 
@@ -52,35 +47,73 @@
             margin: 40px auto;
         }
 
-        .page-header {
-            margin-bottom: 24px;
-        }
-
         .page-header h1 {
             margin-bottom: 8px;
-            font-size: 28px;
         }
 
         .page-header p {
             color: #6b7280;
-            margin: 0;
+        }
+
+        .search-box {
+            background: #ffffff;
+            padding: 18px;
+            border-radius: 10px;
+            margin: 22px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 11px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        .search-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .clear-btn {
+            padding: 11px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            text-decoration: none;
+            color: #374151;
+            font-weight: 600;
         }
 
         .message {
             background: #ecfdf5;
             color: #047857;
             border: 1px solid #a7f3d0;
-            padding: 12px 14px;
+            padding: 12px;
             margin-bottom: 20px;
             border-radius: 7px;
-            font-size: 14px;
+        }
+
+        .search-info {
+            margin-bottom: 15px;
+            color: #6b7280;
         }
 
         .card {
             background: #ffffff;
             border-radius: 10px;
-            overflow-x: auto;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
         }
 
         table {
@@ -97,56 +130,35 @@
 
         th {
             background: #f9fafb;
-            color: #374151;
-            font-size: 14px;
-        }
-
-        td {
-            font-size: 14px;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
         }
 
         .action-cell {
             display: flex;
-            align-items: center;
             gap: 8px;
+            align-items: center;
         }
 
         .edit-btn {
-            display: inline-block;
             background: #2563eb;
-            color: #ffffff;
-            text-decoration: none;
+            color: white;
             padding: 8px 14px;
             border-radius: 6px;
-            font-size: 13px;
+            text-decoration: none;
             font-weight: 600;
-        }
-
-        .edit-btn:hover {
-            background: #1d4ed8;
-        }
-
-        .delete-form {
-            margin: 0;
         }
 
         .delete-btn {
             background: #dc2626;
-            color: #ffffff;
+            color: white;
             border: none;
             padding: 8px 14px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
             font-weight: 600;
         }
 
-        .delete-btn:hover {
-            background: #b91c1c;
+        .delete-form {
+            margin: 0;
         }
 
         .empty {
@@ -161,69 +173,70 @@
             color: #9ca3af;
             font-size: 12px;
         }
-
-        @media (max-width: 700px) {
-            .navbar {
-                padding: 18px 20px;
-            }
-
-            .container {
-                width: 94%;
-            }
-
-            th,
-            td {
-                white-space: nowrap;
-            }
-        }
     </style>
 </head>
 
 <body>
 
 <div class="navbar">
+    <h2>Advance Billing System</h2>
 
-    <h2>
-        Advance Billing System
-    </h2>
-
-    <a
-        href="{% url 'add_customer' %}"
-        class="add-btn"
-    >
+    <a href="{% url 'add_customer' %}" class="add-btn">
         Add Customer
     </a>
-
 </div>
-
 
 <div class="container">
 
     <div class="page-header">
+        <h1>Customers</h1>
+        <p>View, search and manage customer records.</p>
+    </div>
 
-        <h1>
-            Customers
-        </h1>
+    <div class="search-box">
 
-        <p>
-            View and manage customer records.
-        </p>
+        <form
+            method="GET"
+            action="{% url 'customer_list' %}"
+            class="search-form"
+        >
+
+            <input
+                type="text"
+                name="search"
+                class="search-input"
+                value="{{ search_query }}"
+                placeholder="Search by name, email, phone or address"
+            >
+
+            <button type="submit" class="search-btn">
+                Search
+            </button>
+
+            {% if search_query %}
+                <a href="{% url 'customer_list' %}" class="clear-btn">
+                    Clear
+                </a>
+            {% endif %}
+
+        </form>
 
     </div>
 
-
     {% if messages %}
-
         {% for message in messages %}
-
             <div class="message">
                 {{ message }}
             </div>
-
         {% endfor %}
-
     {% endif %}
 
+    {% if search_query %}
+        <div class="search-info">
+            Search results for:
+            <strong>{{ search_query }}</strong>
+        </div>
+    {% endif %}
 
     <div class="card">
 
@@ -232,7 +245,6 @@
             <table>
 
                 <thead>
-
                     <tr>
                         <th>Name</th>
                         <th>Email</th>
@@ -240,9 +252,7 @@
                         <th>Address</th>
                         <th>Action</th>
                     </tr>
-
                 </thead>
-
 
                 <tbody>
 
@@ -250,21 +260,10 @@
 
                         <tr>
 
-                            <td>
-                                {{ customer.name }}
-                            </td>
-
-                            <td>
-                                {{ customer.email }}
-                            </td>
-
-                            <td>
-                                {{ customer.phone }}
-                            </td>
-
-                            <td>
-                                {{ customer.address }}
-                            </td>
+                            <td>{{ customer.name }}</td>
+                            <td>{{ customer.email }}</td>
+                            <td>{{ customer.phone }}</td>
+                            <td>{{ customer.address }}</td>
 
                             <td>
 
@@ -276,7 +275,6 @@
                                     >
                                         Edit
                                     </a>
-
 
                                     <form
                                         method="POST"
@@ -311,13 +309,18 @@
         {% else %}
 
             <div class="empty">
-                No customers found.
+
+                {% if search_query %}
+                    No customers found for "{{ search_query }}".
+                {% else %}
+                    No customers found.
+                {% endif %}
+
             </div>
 
         {% endif %}
 
     </div>
-
 
     <div class="footer">
         Advance Billing System with QR
@@ -326,5 +329,4 @@
 </div>
 
 </body>
-
 </html>
