@@ -1590,7 +1590,8 @@ def create_invoice(request):
     rows = [
         {
             "product_id": "",
-            "quantity": "1"
+            "quantity": "1",
+            "discount_rate": "0"
         }
     ]
 
@@ -1609,11 +1610,30 @@ def create_invoice(request):
             "quantity"
         )
 
+        submitted_discount_values = request.POST.getlist(
+            "discount_rate"
+        )
+
+        # Backward compatibility:
+        # If the form does not submit discount fields,
+        # treat every product row as having 0% discount.
+        if submitted_discount_values:
+
+            discount_values = submitted_discount_values
+
+        else:
+
+            discount_values = [
+                "0"
+                for _ in product_ids
+            ]
+
         rows = []
 
         row_count = max(
             len(product_ids),
-            len(quantity_values)
+            len(quantity_values),
+            len(discount_values)
         )
 
         for index in range(row_count):
@@ -1630,10 +1650,17 @@ def create_invoice(request):
                 else "1"
             )
 
+            discount_rate = (
+                discount_values[index]
+                if index < len(discount_values)
+                else "0"
+            )
+
             rows.append(
                 {
                     "product_id": product_id,
-                    "quantity": quantity
+                    "quantity": quantity,
+                    "discount_rate": discount_rate
                 }
             )
 
@@ -1642,7 +1669,8 @@ def create_invoice(request):
             rows = [
                 {
                     "product_id": "",
-                    "quantity": "1"
+                    "quantity": "1",
+                    "discount_rate": "0"
                 }
             ]
 
@@ -1673,14 +1701,29 @@ def create_invoice(request):
                 "Please try again."
             )
 
+        elif (
+            submitted_discount_values
+            and len(submitted_discount_values) != len(product_ids)
+        ):
+
+            error = (
+                "Invalid discount rows. "
+                "Please try again."
+            )
+
         validated_items = []
 
         if error is None:
 
-            for index, (product_id, quantity_value) in enumerate(
+            for index, (
+                product_id,
+                quantity_value,
+                discount_value
+            ) in enumerate(
                 zip(
                     product_ids,
-                    quantity_values
+                    quantity_values,
+                    discount_values
                 ),
                 start=1
             ):
@@ -1729,6 +1772,67 @@ def create_invoice(request):
                     error = (
                         f"Quantity must be greater than "
                         f"zero in row {index}."
+                    )
+
+                    break
+
+                # Validate discount percentage.
+                if not discount_value.strip():
+
+                    error = (
+                        f"Discount percentage is required "
+                        f"in row {index}."
+                    )
+
+                    break
+
+                try:
+
+                    discount_rate = Decimal(
+                        discount_value
+                    )
+
+                    if not discount_rate.is_finite():
+
+                        error = (
+                            f"Enter a valid discount percentage "
+                            f"in row {index}."
+                        )
+
+                        break
+
+                    if discount_rate < 0:
+
+                        error = (
+                            f"Discount cannot be negative "
+                            f"in row {index}."
+                        )
+
+                        break
+
+                    if discount_rate > 100:
+
+                        error = (
+                            f"Discount cannot be greater than "
+                            f"100% in row {index}."
+                        )
+
+                        break
+
+                    discount_rate = discount_rate.quantize(
+                        Decimal("0.01"),
+                        rounding=ROUND_HALF_UP
+                    )
+
+                except (
+                    InvalidOperation,
+                    TypeError,
+                    ValueError
+                ):
+
+                    error = (
+                        f"Enter a valid discount percentage "
+                        f"in row {index}."
                     )
 
                     break
@@ -1794,6 +1898,7 @@ def create_invoice(request):
 
                     break
 
+                # 1. Calculate original line subtotal.
                 line_subtotal = (
                     unit_price * quantity
                 ).quantize(
@@ -1801,10 +1906,37 @@ def create_invoice(request):
                     rounding=ROUND_HALF_UP
                 )
 
-                line_gst = (
+                # 2. Calculate discount amount.
+                discount_amount = (
                     line_subtotal
+                    * discount_rate
+                    / Decimal("100")
+                ).quantize(
+                    Decimal("0.01"),
+                    rounding=ROUND_HALF_UP
+                )
+
+                # 3. Calculate taxable amount after discount.
+                taxable_amount = (
+                    line_subtotal - discount_amount
+                ).quantize(
+                    Decimal("0.01"),
+                    rounding=ROUND_HALF_UP
+                )
+
+                # 4. Calculate GST on taxable amount.
+                line_gst = (
+                    taxable_amount
                     * gst_rate
                     / Decimal("100")
+                ).quantize(
+                    Decimal("0.01"),
+                    rounding=ROUND_HALF_UP
+                )
+
+                # 5. Calculate final product row total.
+                line_final_total = (
+                    taxable_amount + line_gst
                 ).quantize(
                     Decimal("0.01"),
                     rounding=ROUND_HALF_UP
@@ -1816,13 +1948,18 @@ def create_invoice(request):
                         "quantity": quantity,
                         "unit_price": unit_price,
                         "gst_rate": gst_rate,
+                        "discount_rate": discount_rate,
                         "line_total": line_subtotal,
-                        "line_gst": line_gst
+                        "discount_amount": discount_amount,
+                        "taxable_amount": taxable_amount,
+                        "line_gst": line_gst,
+                        "line_final_total": line_final_total
                     }
                 )
 
         if error is None:
 
+            # Total before discount.
             subtotal = sum(
                 (
                     item["line_total"]
@@ -1834,6 +1971,27 @@ def create_invoice(request):
                 rounding=ROUND_HALF_UP
             )
 
+            # Total discount across all product rows.
+            total_discount = sum(
+                (
+                    item["discount_amount"]
+                    for item in validated_items
+                ),
+                Decimal("0.00")
+            ).quantize(
+                Decimal("0.01"),
+                rounding=ROUND_HALF_UP
+            )
+
+            # Total taxable amount after discount.
+            taxable_amount = (
+                subtotal - total_discount
+            ).quantize(
+                Decimal("0.01"),
+                rounding=ROUND_HALF_UP
+            )
+
+            # Total GST after applying discounts.
             gst_amount = sum(
                 (
                     item["line_gst"]
@@ -1845,8 +2003,9 @@ def create_invoice(request):
                 rounding=ROUND_HALF_UP
             )
 
+            # Final invoice amount.
             grand_total = (
-                subtotal + gst_amount
+                taxable_amount + gst_amount
             ).quantize(
                 Decimal("0.01"),
                 rounding=ROUND_HALF_UP
@@ -1863,6 +2022,7 @@ def create_invoice(request):
                     invoice_number=invoice_number,
                     customer=customer,
                     subtotal=subtotal,
+                    discount_amount=total_discount,
                     gst_amount=gst_amount,
                     grand_total=grand_total
                 )
@@ -1878,6 +2038,8 @@ def create_invoice(request):
                             quantity=item["quantity"],
                             unit_price=item["unit_price"],
                             gst_rate=item["gst_rate"],
+                            discount_rate=item["discount_rate"],
+                            discount_amount=item["discount_amount"],
                             line_total=item["line_total"]
                         )
                     )

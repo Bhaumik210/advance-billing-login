@@ -7,9 +7,16 @@ from django.utils import timezone
 
 
 class OTPVerification(models.Model):
+
     email = models.EmailField()
-    otp_code = models.CharField(max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
+
+    otp_code = models.CharField(
+        max_length=6
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def is_expired(self):
         return (
@@ -22,6 +29,7 @@ class OTPVerification(models.Model):
 
 
 class DistributorProfile(models.Model):
+
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -41,6 +49,7 @@ class DistributorProfile(models.Model):
 
 
 class Customer(models.Model):
+
     name = models.CharField(
         max_length=100
     )
@@ -68,6 +77,7 @@ class Customer(models.Model):
 
 
 class Product(models.Model):
+
     name = models.CharField(
         max_length=150
     )
@@ -105,7 +115,9 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
-    # ============================================================
+
+
+# ============================================================
 # INVOICE MODEL
 # ============================================================
 
@@ -133,18 +145,28 @@ class Invoice(models.Model):
         default=timezone.localdate
     )
 
+    # Total amount before discount
     subtotal = models.DecimalField(
         max_digits=12,
         decimal_places=2,
         default=Decimal("0.00")
     )
 
+    # Total discount applied to invoice items
+    discount_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    # GST calculated after discount
     gst_amount = models.DecimalField(
         max_digits=12,
         decimal_places=2,
         default=Decimal("0.00")
     )
 
+    # Final amount after discount and GST
     grand_total = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -202,6 +224,21 @@ class InvoiceItem(models.Model):
         default=Decimal("0.00")
     )
 
+    # Discount percentage for this product
+    discount_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    # Discount amount for this product
+    discount_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    # Original subtotal before discount
     line_total = models.DecimalField(
         max_digits=12,
         decimal_places=2,

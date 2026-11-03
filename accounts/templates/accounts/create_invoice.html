@@ -56,6 +56,7 @@
 
         .form-group {
             margin-bottom: 15px;
+            min-width: 0;
         }
 
         .form-group label {
@@ -80,6 +81,11 @@
         select:focus {
             border-color: #23856d;
             box-shadow: 0 0 0 3px rgba(35, 133, 109, 0.10);
+        }
+
+        input[readonly] {
+            background: #f5f7f9;
+            color: #52616b;
         }
 
         .customer-select {
@@ -108,13 +114,13 @@
 
         .fields-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
+            grid-template-columns: 2fr 0.9fr 1fr 0.8fr 1fr;
             gap: 15px;
         }
 
         .calculation-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 12px;
             margin-top: 15px;
             padding-top: 15px;
@@ -131,6 +137,7 @@
             margin-top: 6px;
             font-size: 15px;
             color: #263238;
+            overflow-wrap: anywhere;
         }
 
         .btn {
@@ -193,6 +200,10 @@
             border-bottom: none;
         }
 
+        .summary-row strong {
+            text-align: right;
+        }
+
         .summary-row.total {
             font-size: 19px;
             font-weight: 700;
@@ -231,29 +242,26 @@
             margin-top: 10px;
         }
 
-        @media (max-width: 800px) {
-            body {
-                padding: 15px;
-            }
-
+        @media (max-width: 900px) {
             .fields-grid {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: repeat(2, 1fr);
             }
 
             .calculation-grid {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: repeat(3, 1fr);
             }
         }
 
         @media (max-width: 500px) {
+            body {
+                padding: 15px;
+            }
+
             .card {
                 padding: 17px;
             }
 
-            .fields-grid {
-                grid-template-columns: 1fr;
-            }
-
+            .fields-grid,
             .calculation-grid {
                 grid-template-columns: 1fr;
             }
@@ -268,6 +276,14 @@
 
             .btn-submit {
                 width: 100%;
+            }
+
+            .summary-row {
+                font-size: 13px;
+            }
+
+            .summary-row.total {
+                font-size: 17px;
             }
         }
     </style>
@@ -392,8 +408,24 @@
                             </div>
 
                             <div class="form-group">
-                                <label>GST Rate</label>
+                                <label>GST Rate (%)</label>
                                 <input type="text" class="gst-rate" value="0%" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Discount (%)</label>
+
+                                <input
+                                    type="number"
+                                    name="discount_rate"
+                                    class="discount-input"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    value="{{ row.discount_rate|default:'0' }}"
+                                    placeholder="0"
+                                    required
+                                >
                             </div>
 
                         </div>
@@ -406,12 +438,22 @@
                             </div>
 
                             <div class="calculation-item">
+                                Discount Amount
+                                <strong class="line-discount">₹0.00</strong>
+                            </div>
+
+                            <div class="calculation-item">
+                                Taxable Amount
+                                <strong class="line-taxable">₹0.00</strong>
+                            </div>
+
+                            <div class="calculation-item">
                                 GST Amount
                                 <strong class="line-gst">₹0.00</strong>
                             </div>
 
                             <div class="calculation-item">
-                                Total
+                                Final Item Total
                                 <strong class="line-total">₹0.00</strong>
                             </div>
 
@@ -454,7 +496,16 @@
 
                             <div class="form-group">
                                 <label>Quantity</label>
-                                <input type="number" name="quantity" class="quantity-input" min="1" step="1" value="1" required>
+
+                                <input
+                                    type="number"
+                                    name="quantity"
+                                    class="quantity-input"
+                                    min="1"
+                                    step="1"
+                                    value="1"
+                                    required
+                                >
                             </div>
 
                             <div class="form-group">
@@ -463,8 +514,24 @@
                             </div>
 
                             <div class="form-group">
-                                <label>GST Rate</label>
+                                <label>GST Rate (%)</label>
                                 <input type="text" class="gst-rate" value="0%" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Discount (%)</label>
+
+                                <input
+                                    type="number"
+                                    name="discount_rate"
+                                    class="discount-input"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    value="0"
+                                    placeholder="0"
+                                    required
+                                >
                             </div>
 
                         </div>
@@ -477,12 +544,22 @@
                             </div>
 
                             <div class="calculation-item">
+                                Discount Amount
+                                <strong class="line-discount">₹0.00</strong>
+                            </div>
+
+                            <div class="calculation-item">
+                                Taxable Amount
+                                <strong class="line-taxable">₹0.00</strong>
+                            </div>
+
+                            <div class="calculation-item">
                                 GST Amount
                                 <strong class="line-gst">₹0.00</strong>
                             </div>
 
                             <div class="calculation-item">
-                                Total
+                                Final Item Total
                                 <strong class="line-total">₹0.00</strong>
                             </div>
 
@@ -516,6 +593,16 @@
                 <div class="summary-row">
                     <span>Subtotal</span>
                     <strong id="summary-subtotal">₹0.00</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Total Discount</span>
+                    <strong id="summary-discount">₹0.00</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Taxable Amount</span>
+                    <strong id="summary-taxable">₹0.00</strong>
                 </div>
 
                 <div class="summary-row">
@@ -596,8 +683,24 @@
             </div>
 
             <div class="form-group">
-                <label>GST Rate</label>
+                <label>GST Rate (%)</label>
                 <input type="text" class="gst-rate" value="0%" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Discount (%)</label>
+
+                <input
+                    type="number"
+                    name="discount_rate"
+                    class="discount-input"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value="0"
+                    placeholder="0"
+                    required
+                >
             </div>
 
         </div>
@@ -610,12 +713,22 @@
             </div>
 
             <div class="calculation-item">
+                Discount Amount
+                <strong class="line-discount">₹0.00</strong>
+            </div>
+
+            <div class="calculation-item">
+                Taxable Amount
+                <strong class="line-taxable">₹0.00</strong>
+            </div>
+
+            <div class="calculation-item">
                 GST Amount
                 <strong class="line-gst">₹0.00</strong>
             </div>
 
             <div class="calculation-item">
-                Total
+                Final Item Total
                 <strong class="line-total">₹0.00</strong>
             </div>
 
@@ -630,6 +743,7 @@
     const addProductButton = document.getElementById("add-product");
     const rowTemplate = document.getElementById("product-row-template");
     const customerSelect = document.getElementById("customer");
+    const invoiceForm = document.getElementById("invoice-form");
 
     // Format amount in Indian currency style.
     function formatCurrency(amount) {
@@ -642,6 +756,20 @@
     // Round amount to two decimal places.
     function roundAmount(amount) {
         return Math.round((amount + Number.EPSILON) * 100) / 100;
+    }
+
+    // Validate discount percentage.
+    function validateDiscountInput(input) {
+        const value = input.value.trim();
+        const discountRate = Number(value);
+
+        if (value === "" || !Number.isFinite(discountRate)) {
+            input.setCustomValidity("Please enter a valid discount percentage.");
+        } else if (discountRate < 0 || discountRate > 100) {
+            input.setCustomValidity("Discount must be between 0% and 100%.");
+        } else {
+            input.setCustomValidity("");
+        }
     }
 
     // Update product row numbers.
@@ -658,11 +786,14 @@
     function calculateProductRow(row) {
         const productSelect = row.querySelector(".product-select");
         const quantityInput = row.querySelector(".quantity-input");
+        const discountInput = row.querySelector(".discount-input");
 
         const unitPriceField = row.querySelector(".unit-price");
         const gstRateField = row.querySelector(".gst-rate");
 
         const subtotalField = row.querySelector(".line-subtotal");
+        const discountField = row.querySelector(".line-discount");
+        const taxableField = row.querySelector(".line-taxable");
         const gstField = row.querySelector(".line-gst");
         const totalField = row.querySelector(".line-total");
 
@@ -676,24 +807,65 @@
             gstRate = Number(selectedOption.dataset.gst || 0);
         }
 
+        if (!Number.isFinite(price)) {
+            price = 0;
+        }
+
+        if (!Number.isFinite(gstRate)) {
+            gstRate = 0;
+        }
+
         const quantity = Math.max(
             0,
             parseInt(quantityInput.value, 10) || 0
         );
 
+        let discountRate = Number(discountInput.value);
+
+        if (!Number.isFinite(discountRate)) {
+            discountRate = 0;
+        }
+
+        // Keep the preview within the allowed percentage range.
+        // The original input is not changed; invalid values are blocked on submit.
+        discountRate = Math.min(100, Math.max(0, discountRate));
+
+        // Step 1: Calculate subtotal.
         const subtotal = roundAmount(price * quantity);
-        const gstAmount = roundAmount(subtotal * gstRate / 100);
-        const total = roundAmount(subtotal + gstAmount);
+
+        // Step 2: Calculate discount amount.
+        const discountAmount = roundAmount(
+            subtotal * discountRate / 100
+        );
+
+        // Step 3: Calculate taxable amount.
+        const taxableAmount = roundAmount(
+            subtotal - discountAmount
+        );
+
+        // Step 4: Calculate GST on taxable amount.
+        const gstAmount = roundAmount(
+            taxableAmount * gstRate / 100
+        );
+
+        // Step 5: Calculate final item total.
+        const total = roundAmount(
+            taxableAmount + gstAmount
+        );
 
         unitPriceField.value = formatCurrency(price);
         gstRateField.value = gstRate + "%";
 
         subtotalField.textContent = formatCurrency(subtotal);
+        discountField.textContent = formatCurrency(discountAmount);
+        taxableField.textContent = formatCurrency(taxableAmount);
         gstField.textContent = formatCurrency(gstAmount);
         totalField.textContent = formatCurrency(total);
 
         return {
             subtotal: subtotal,
+            discount: discountAmount,
+            taxable: taxableAmount,
             gst: gstAmount,
             total: total
         };
@@ -704,6 +876,8 @@
         const rows = rowsContainer.querySelectorAll(".product-row");
 
         let totalSubtotal = 0;
+        let totalDiscount = 0;
+        let totalTaxable = 0;
         let totalGST = 0;
         let grandTotal = 0;
 
@@ -711,12 +885,20 @@
             const result = calculateProductRow(row);
 
             totalSubtotal += result.subtotal;
+            totalDiscount += result.discount;
+            totalTaxable += result.taxable;
             totalGST += result.gst;
             grandTotal += result.total;
         });
 
         document.getElementById("summary-subtotal").textContent =
             formatCurrency(roundAmount(totalSubtotal));
+
+        document.getElementById("summary-discount").textContent =
+            formatCurrency(roundAmount(totalDiscount));
+
+        document.getElementById("summary-taxable").textContent =
+            formatCurrency(roundAmount(totalTaxable));
 
         document.getElementById("summary-gst").textContent =
             formatCurrency(roundAmount(totalGST));
@@ -739,14 +921,25 @@
     rowsContainer.addEventListener("change", function (event) {
         if (
             event.target.classList.contains("product-select") ||
-            event.target.classList.contains("quantity-input")
+            event.target.classList.contains("quantity-input") ||
+            event.target.classList.contains("discount-input")
         ) {
+            if (event.target.classList.contains("discount-input")) {
+                validateDiscountInput(event.target);
+            }
+
             calculateInvoice();
         }
     });
 
+    // Update calculations while the user types.
     rowsContainer.addEventListener("input", function (event) {
         if (event.target.classList.contains("quantity-input")) {
+            calculateInvoice();
+        }
+
+        if (event.target.classList.contains("discount-input")) {
+            validateDiscountInput(event.target);
             calculateInvoice();
         }
     });
@@ -768,10 +961,34 @@
             // Keep at least one product row.
             row.querySelector(".product-select").value = "";
             row.querySelector(".quantity-input").value = 1;
+            row.querySelector(".discount-input").value = 0;
+            row.dataset.selectedProduct = "";
+
+            validateDiscountInput(row.querySelector(".discount-input"));
         }
 
         updateRowNumbers();
         calculateInvoice();
+    });
+
+    // Validate all discount fields before submitting the invoice.
+    invoiceForm.addEventListener("submit", function (event) {
+        const discountInputs = rowsContainer.querySelectorAll(".discount-input");
+
+        let firstInvalidInput = null;
+
+        discountInputs.forEach(input => {
+            validateDiscountInput(input);
+
+            if (!input.checkValidity() && !firstInvalidInput) {
+                firstInvalidInput = input;
+            }
+        });
+
+        if (firstInvalidInput) {
+            event.preventDefault();
+            firstInvalidInput.reportValidity();
+        }
     });
 
     // Restore selected customer after a validation error.
@@ -786,6 +1003,8 @@
         if (selectedProduct) {
             row.querySelector(".product-select").value = selectedProduct;
         }
+
+        validateDiscountInput(row.querySelector(".discount-input"));
     });
 
     // Initial calculations when page loads.
