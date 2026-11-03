@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Invoice | Advance Billing System</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f9;
+            color: #263238;
+            padding: 25px;
+        }
+
+        .page-container {
+            max-width: 1150px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 25px;
+        }
+
+        .page-header h1 {
+            font-size: 27px;
+            margin-bottom: 7px;
+            color: #263238;
+        }
+
+        .page-header p {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 22px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.04);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #263238;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dce1e7;
+            border-radius: 7px;
+            font-size: 14px;
+            background: #ffffff;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #23856d;
+            box-shadow: 0 0 0 3px rgba(35, 133, 109, 0.10);
+        }
+
+        .customer-select {
+            max-width: 500px;
+        }
+
+        .product-row {
+            border: 1px solid #e3e8ed;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 15px;
+            background: #fcfdfd;
+        }
+
+        .row-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .row-heading h3 {
+            font-size: 15px;
+            color: #34495e;
+        }
+
+        .fields-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .calculation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9edf0;
+        }
+
+        .calculation-item {
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .calculation-item strong {
+            display: block;
+            margin-top: 6px;
+            font-size: 15px;
+            color: #263238;
+        }
+
+        .btn {
+            border: none;
+            padding: 11px 18px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-add {
+            background: #e5f4ef;
+            color: #18765e;
+        }
+
+        .btn-add:hover {
+            background: #cceade;
+        }
+
+        .btn-remove {
+            background: #fff0f0;
+            color: #d64545;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .btn-remove:hover {
+            background: #ffdddd;
+        }
+
+        .btn-submit {
+            background: #18765e;
+            color: #ffffff;
+            padding: 13px 25px;
+        }
+
+        .btn-submit:hover {
+            background: #125c49;
+        }
+
+        .summary-card {
+            background: #f8fafb;
+            border: 1px solid #e5eaee;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 10px 0;
+            font-size: 14px;
+            border-bottom: 1px solid #e5eaee;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-row.total {
+            font-size: 19px;
+            font-weight: 700;
+            color: #18765e;
+            padding-top: 17px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .alert {
+            padding: 13px 16px;
+            border-radius: 7px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: #fff0f0;
+            color: #b83232;
+            border: 1px solid #ffd2d2;
+        }
+
+        .alert-success {
+            background: #e8f7ef;
+            color: #187044;
+            border: 1px solid #c6ebd5;
+        }
+
+        .empty-message {
+            color: #b83232;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 800px) {
+            body {
+                padding: 15px;
+            }
+
+            .fields-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .calculation-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .card {
+                padding: 17px;
+            }
+
+            .fields-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .calculation-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header h1 {
+                font-size: 22px;
+            }
+
+            .form-actions {
+                justify-content: stretch;
+            }
+
+            .btn-submit {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <h1>Create New Invoice</h1>
+        <p>Add a customer and multiple products to generate an invoice.</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if error %}
+        <div class="alert alert-error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'create_invoice' %}" id="invoice-form">
+        {% csrf_token %}
+
+        <!-- Customer Section -->
+        <div class="card">
+
+            <h2 class="section-title">Customer Details</h2>
+
+            <div class="form-group customer-select">
+                <label for="customer">Select Customer</label>
+
+                <select
+                    name="customer"
+                    id="customer"
+                    required
+                    data-selected="{{ selected_customer|default:'' }}"
+                >
+                    <option value="">-- Select Customer --</option>
+
+                    {% for customer in customers %}
+                        <option value="{{ customer.id }}">
+                            {{ customer.name }} - {{ customer.email }}
+                        </option>
+                    {% endfor %}
+
+                </select>
+            </div>
+
+            {% if not customers %}
+                <p class="empty-message">
+                    No customers found. Please add a customer first.
+                </p>
+            {% endif %}
+
+        </div>
+
+        <!-- Products Section -->
+        <div class="card">
+
+            <h2 class="section-title">Invoice Products</h2>
+
+            <div id="product-rows">
+
+                {% for row in rows %}
+
+                    <div class="product-row" data-selected-product="{{ row.product_id|default:'' }}">
+
+                        <div class="row-heading">
+                            <h3>Product <span class="row-number">{{ forloop.counter }}</span></h3>
+
+                            <button type="button" class="btn btn-remove remove-row">
+                                Remove
+                            </button>
+                        </div>
+
+                        <div class="fields-grid">
+
+                            <div class="form-group">
+                                <label>Product</label>
+
+                                <select name="product_id" class="product-select" required>
+                                    <option value="">-- Select Product --</option>
+
+                                    {% for product in products %}
+                                        <option
+                                            value="{{ product.id }}"
+                                            data-price="{{ product.price }}"
+                                            data-gst="{{ product.gst_rate }}"
+                                        >
+                                            {{ product.name }} - ₹{{ product.price }}
+                                        </option>
+                                    {% endfor %}
+
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Quantity</label>
+
+                                <input
+                                    type="number"
+                                    name="quantity"
+                                    class="quantity-input"
+                                    min="1"
+                                    step="1"
+                                    value="{{ row.quantity|default:'1' }}"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label>Unit Price</label>
+                                <input type="text" class="unit-price" value="₹0.00" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>GST Rate</label>
+                                <input type="text" class="gst-rate" value="0%" readonly>
+                            </div>
+
+                        </div>
+
+                        <div class="calculation-grid">
+
+                            <div class="calculation-item">
+                                Subtotal
+                                <strong class="line-subtotal">₹0.00</strong>
+                            </div>
+
+                            <div class="calculation-item">
+                                GST Amount
+                                <strong class="line-gst">₹0.00</strong>
+                            </div>
+
+                            <div class="calculation-item">
+                                Total
+                                <strong class="line-total">₹0.00</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% empty %}
+
+                    <div class="product-row" data-selected-product="">
+
+                        <div class="row-heading">
+                            <h3>Product <span class="row-number">1</span></h3>
+
+                            <button type="button" class="btn btn-remove remove-row">
+                                Remove
+                            </button>
+                        </div>
+
+                        <div class="fields-grid">
+
+                            <div class="form-group">
+                                <label>Product</label>
+
+                                <select name="product_id" class="product-select" required>
+                                    <option value="">-- Select Product --</option>
+
+                                    {% for product in products %}
+                                        <option
+                                            value="{{ product.id }}"
+                                            data-price="{{ product.price }}"
+                                            data-gst="{{ product.gst_rate }}"
+                                        >
+                                            {{ product.name }} - ₹{{ product.price }}
+                                        </option>
+                                    {% endfor %}
+
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                <input type="number" name="quantity" class="quantity-input" min="1" step="1" value="1" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Unit Price</label>
+                                <input type="text" class="unit-price" value="₹0.00" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>GST Rate</label>
+                                <input type="text" class="gst-rate" value="0%" readonly>
+                            </div>
+
+                        </div>
+
+                        <div class="calculation-grid">
+
+                            <div class="calculation-item">
+                                Subtotal
+                                <strong class="line-subtotal">₹0.00</strong>
+                            </div>
+
+                            <div class="calculation-item">
+                                GST Amount
+                                <strong class="line-gst">₹0.00</strong>
+                            </div>
+
+                            <div class="calculation-item">
+                                Total
+                                <strong class="line-total">₹0.00</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+            <button type="button" class="btn btn-add" id="add-product">
+                + Add Product
+            </button>
+
+            {% if not products %}
+                <p class="empty-message">
+                    No products found. Please add a product first.
+                </p>
+            {% endif %}
+
+        </div>
+
+        <!-- Invoice Summary -->
+        <div class="card">
+
+            <h2 class="section-title">Invoice Summary</h2>
+
+            <div class="summary-card">
+
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <strong id="summary-subtotal">₹0.00</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Total GST</span>
+                    <strong id="summary-gst">₹0.00</strong>
+                </div>
+
+                <div class="summary-row total">
+                    <span>Grand Total</span>
+                    <strong id="summary-grand-total">₹0.00</strong>
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-submit">
+                    Create Invoice
+                </button>
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+<!-- Template used when adding a new product row -->
+<template id="product-row-template">
+
+    <div class="product-row" data-selected-product="">
+
+        <div class="row-heading">
+            <h3>Product <span class="row-number"></span></h3>
+
+            <button type="button" class="btn btn-remove remove-row">
+                Remove
+            </button>
+        </div>
+
+        <div class="fields-grid">
+
+            <div class="form-group">
+                <label>Product</label>
+
+                <select name="product_id" class="product-select" required>
+                    <option value="">-- Select Product --</option>
+
+                    {% for product in products %}
+                        <option
+                            value="{{ product.id }}"
+                            data-price="{{ product.price }}"
+                            data-gst="{{ product.gst_rate }}"
+                        >
+                            {{ product.name }} - ₹{{ product.price }}
+                        </option>
+                    {% endfor %}
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Quantity</label>
+
+                <input
+                    type="number"
+                    name="quantity"
+                    class="quantity-input"
+                    min="1"
+                    step="1"
+                    value="1"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Unit Price</label>
+                <input type="text" class="unit-price" value="₹0.00" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>GST Rate</label>
+                <input type="text" class="gst-rate" value="0%" readonly>
+            </div>
+
+        </div>
+
+        <div class="calculation-grid">
+
+            <div class="calculation-item">
+                Subtotal
+                <strong class="line-subtotal">₹0.00</strong>
+            </div>
+
+            <div class="calculation-item">
+                GST Amount
+                <strong class="line-gst">₹0.00</strong>
+            </div>
+
+            <div class="calculation-item">
+                Total
+                <strong class="line-total">₹0.00</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+</template>
+
+<script>
+    const rowsContainer = document.getElementById("product-rows");
+    const addProductButton = document.getElementById("add-product");
+    const rowTemplate = document.getElementById("product-row-template");
+    const customerSelect = document.getElementById("customer");
+
+    // Format amount in Indian currency style.
+    function formatCurrency(amount) {
+        return "₹" + amount.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    // Round amount to two decimal places.
+    function roundAmount(amount) {
+        return Math.round((amount + Number.EPSILON) * 100) / 100;
+    }
+
+    // Update product row numbers.
+    function updateRowNumbers() {
+        const rows = rowsContainer.querySelectorAll(".product-row");
+
+        rows.forEach((row, index) => {
+            const number = row.querySelector(".row-number");
+            number.textContent = index + 1;
+        });
+    }
+
+    // Calculate one product row.
+    function calculateProductRow(row) {
+        const productSelect = row.querySelector(".product-select");
+        const quantityInput = row.querySelector(".quantity-input");
+
+        const unitPriceField = row.querySelector(".unit-price");
+        const gstRateField = row.querySelector(".gst-rate");
+
+        const subtotalField = row.querySelector(".line-subtotal");
+        const gstField = row.querySelector(".line-gst");
+        const totalField = row.querySelector(".line-total");
+
+        const selectedOption = productSelect.options[productSelect.selectedIndex];
+
+        let price = 0;
+        let gstRate = 0;
+
+        if (selectedOption && selectedOption.value) {
+            price = Number(selectedOption.dataset.price || 0);
+            gstRate = Number(selectedOption.dataset.gst || 0);
+        }
+
+        const quantity = Math.max(
+            0,
+            parseInt(quantityInput.value, 10) || 0
+        );
+
+        const subtotal = roundAmount(price * quantity);
+        const gstAmount = roundAmount(subtotal * gstRate / 100);
+        const total = roundAmount(subtotal + gstAmount);
+
+        unitPriceField.value = formatCurrency(price);
+        gstRateField.value = gstRate + "%";
+
+        subtotalField.textContent = formatCurrency(subtotal);
+        gstField.textContent = formatCurrency(gstAmount);
+        totalField.textContent = formatCurrency(total);
+
+        return {
+            subtotal: subtotal,
+            gst: gstAmount,
+            total: total
+        };
+    }
+
+    // Calculate the complete invoice summary.
+    function calculateInvoice() {
+        const rows = rowsContainer.querySelectorAll(".product-row");
+
+        let totalSubtotal = 0;
+        let totalGST = 0;
+        let grandTotal = 0;
+
+        rows.forEach(row => {
+            const result = calculateProductRow(row);
+
+            totalSubtotal += result.subtotal;
+            totalGST += result.gst;
+            grandTotal += result.total;
+        });
+
+        document.getElementById("summary-subtotal").textContent =
+            formatCurrency(roundAmount(totalSubtotal));
+
+        document.getElementById("summary-gst").textContent =
+            formatCurrency(roundAmount(totalGST));
+
+        document.getElementById("summary-grand-total").textContent =
+            formatCurrency(roundAmount(grandTotal));
+    }
+
+    // Add a new product row without refreshing the page.
+    addProductButton.addEventListener("click", function () {
+        const newRow = rowTemplate.content.firstElementChild.cloneNode(true);
+
+        rowsContainer.appendChild(newRow);
+
+        updateRowNumbers();
+        calculateInvoice();
+    });
+
+    // Handle product selection and quantity changes.
+    rowsContainer.addEventListener("change", function (event) {
+        if (
+            event.target.classList.contains("product-select") ||
+            event.target.classList.contains("quantity-input")
+        ) {
+            calculateInvoice();
+        }
+    });
+
+    rowsContainer.addEventListener("input", function (event) {
+        if (event.target.classList.contains("quantity-input")) {
+            calculateInvoice();
+        }
+    });
+
+    // Remove a product row.
+    rowsContainer.addEventListener("click", function (event) {
+        const removeButton = event.target.closest(".remove-row");
+
+        if (!removeButton) {
+            return;
+        }
+
+        const row = removeButton.closest(".product-row");
+        const rows = rowsContainer.querySelectorAll(".product-row");
+
+        if (rows.length > 1) {
+            row.remove();
+        } else {
+            // Keep at least one product row.
+            row.querySelector(".product-select").value = "";
+            row.querySelector(".quantity-input").value = 1;
+        }
+
+        updateRowNumbers();
+        calculateInvoice();
+    });
+
+    // Restore selected customer after a validation error.
+    if (customerSelect.dataset.selected) {
+        customerSelect.value = customerSelect.dataset.selected;
+    }
+
+    // Restore selected products after a validation error.
+    document.querySelectorAll(".product-row").forEach(row => {
+        const selectedProduct = row.dataset.selectedProduct;
+
+        if (selectedProduct) {
+            row.querySelector(".product-select").value = selectedProduct;
+        }
+    });
+
+    // Initial calculations when page loads.
+    updateRowNumbers();
+    calculateInvoice();
+</script>
+
+</body>
+</html>

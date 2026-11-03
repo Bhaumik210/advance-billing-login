@@ -2,7 +2,8 @@ import random
 import re
 
 from datetime import timedelta
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from uuid import uuid4
 
 from django.shortcuts import (
     render,
@@ -24,6 +25,7 @@ from django.views.decorators.cache import never_cache
 
 from django.utils import timezone
 from django.db import transaction
+from django.db.models.deletion import ProtectedError
 from django.db.models import Q
 
 from django.core.validators import validate_email
@@ -35,6 +37,8 @@ from .models import (
     DistributorProfile,
     Customer,
     Product,
+    Invoice,
+    InvoiceItem,
 )
 
 
@@ -75,8 +79,7 @@ def admin_login(request):
             request,
             "accounts/admin_login.html",
             {
-                "error":
-                "Invalid username or password"
+                "error": "Invalid username or password"
             }
         )
 
@@ -136,8 +139,7 @@ def distributor_login(request):
             request,
             "accounts/distributor_login.html",
             {
-                "error":
-                "Invalid username or password"
+                "error": "Invalid username or password"
             }
         )
 
@@ -216,9 +218,7 @@ def distributor_register(request):
 
             try:
 
-                validate_email(
-                    email
-                )
+                validate_email(email)
 
             except ValidationError:
 
@@ -599,9 +599,7 @@ def edit_distributor_profile(request):
 
             try:
 
-                validate_email(
-                    email
-                )
+                validate_email(email)
 
             except ValidationError:
 
@@ -658,9 +656,7 @@ def edit_distributor_profile(request):
                 1
             )
 
-            user.first_name = (
-                name_parts[0]
-            )
+            user.first_name = name_parts[0]
 
             if len(name_parts) > 1:
                 user.last_name = name_parts[1]
@@ -768,9 +764,7 @@ def add_customer(request):
 
             try:
 
-                validate_email(
-                    email
-                )
+                validate_email(email)
 
             except ValidationError:
 
@@ -853,21 +847,13 @@ def customer_list(request):
     if search_query:
 
         customers = customers.filter(
-            Q(
-                name__icontains=search_query
-            )
+            Q(name__icontains=search_query)
             |
-            Q(
-                email__icontains=search_query
-            )
+            Q(email__icontains=search_query)
             |
-            Q(
-                phone__icontains=search_query
-            )
+            Q(phone__icontains=search_query)
             |
-            Q(
-                address__icontains=search_query
-            )
+            Q(address__icontains=search_query)
         )
 
     customers = customers.order_by(
@@ -954,9 +940,7 @@ def edit_customer(
 
             try:
 
-                validate_email(
-                    email
-                )
+                validate_email(email)
 
             except ValidationError:
 
@@ -995,8 +979,8 @@ def edit_customer(
             elif not phone.isdigit():
 
                 error = (
-                    "Phone number should contain "
-                    "only digits."
+                    "Phone number should "
+                    "contain only digits."
                 )
 
             elif len(phone) != 10:
@@ -1063,9 +1047,7 @@ def delete_customer(
 
     if request.method == "POST":
 
-        customer_name = (
-            customer.name
-        )
+        customer_name = customer.name
 
         customer.delete()
 
@@ -1294,17 +1276,11 @@ def product_list(request):
     if search_query:
 
         products = products.filter(
-            Q(
-                name__icontains=search_query
-            )
+            Q(name__icontains=search_query)
             |
-            Q(
-                category__icontains=search_query
-            )
+            Q(category__icontains=search_query)
             |
-            Q(
-                description__icontains=search_query
-            )
+            Q(description__icontains=search_query)
         )
 
     products = products.order_by(
@@ -1330,6 +1306,608 @@ def product_list(request):
         {
             "page_obj": page_obj,
             "search_query": search_query
+        }
+    )
+
+
+@login_required(
+    login_url="distributor_login"
+)
+def delete_product(
+    request,
+    product_id
+):
+
+    if request.method != "POST":
+        return redirect("product_list")
+
+    product = get_object_or_404(
+        Product,
+        id=product_id
+    )
+
+    product_name = product.name
+
+    try:
+
+        product.delete()
+
+        messages.success(
+            request,
+            f"Product '{product_name}' deleted successfully."
+        )
+
+    except ProtectedError:
+
+        messages.error(
+            request,
+            f"Cannot delete '{product_name}' because it is already used in an invoice."
+        )
+
+    return redirect(
+        "product_list"
+    )
+
+
+@login_required(
+    login_url="distributor_login"
+)
+def edit_product(
+    request,
+    product_id
+):
+
+    product = get_object_or_404(
+        Product,
+        id=product_id
+    )
+
+    error = None
+
+    form_data = {
+        "name": product.name,
+        "category": product.category,
+        "price": product.price,
+        "stock": product.stock,
+        "gst_rate": product.gst_rate,
+        "description": product.description
+    }
+
+    if request.method == "POST":
+
+        name = request.POST.get(
+            "name",
+            ""
+        ).strip()
+
+        category = request.POST.get(
+            "category",
+            ""
+        ).strip()
+
+        price_value = request.POST.get(
+            "price",
+            ""
+        ).strip()
+
+        stock_value = request.POST.get(
+            "stock",
+            ""
+        ).strip()
+
+        gst_value = request.POST.get(
+            "gst_rate",
+            ""
+        ).strip()
+
+        description = request.POST.get(
+            "description",
+            ""
+        ).strip()
+
+        form_data = {
+            "name": name,
+            "category": category,
+            "price": price_value,
+            "stock": stock_value,
+            "gst_rate": gst_value,
+            "description": description
+        }
+
+        price = None
+        stock = None
+        gst_rate = None
+
+        if not name:
+
+            error = (
+                "Product name is required."
+            )
+
+        elif len(name) < 2:
+
+            error = (
+                "Product name must contain "
+                "at least 2 characters."
+            )
+
+        elif not category:
+
+            error = (
+                "Category is required."
+            )
+
+        if error is None:
+
+            if not price_value:
+
+                error = (
+                    "Price is required."
+                )
+
+            else:
+
+                try:
+
+                    price = Decimal(
+                        price_value
+                    )
+
+                    if not price.is_finite():
+
+                        error = (
+                            "Enter a valid price."
+                        )
+
+                    elif price <= 0:
+
+                        error = (
+                            "Price must be greater than 0."
+                        )
+
+                except InvalidOperation:
+
+                    error = (
+                        "Enter a valid price."
+                    )
+
+        if error is None:
+
+            if stock_value == "":
+
+                error = (
+                    "Stock is required."
+                )
+
+            else:
+
+                try:
+
+                    stock = int(
+                        stock_value
+                    )
+
+                    if stock < 0:
+
+                        error = (
+                            "Stock cannot be negative."
+                        )
+
+                except ValueError:
+
+                    error = (
+                        "Stock must be a whole number."
+                    )
+
+        if error is None:
+
+            if not gst_value:
+
+                error = (
+                    "GST rate is required."
+                )
+
+            else:
+
+                try:
+
+                    gst_rate = Decimal(
+                        gst_value
+                    )
+
+                    if not gst_rate.is_finite():
+
+                        error = (
+                            "Enter a valid GST rate."
+                        )
+
+                    elif gst_rate < 0:
+
+                        error = (
+                            "GST rate cannot be negative."
+                        )
+
+                    elif gst_rate > 100:
+
+                        error = (
+                            "GST rate cannot be greater than 100."
+                        )
+
+                except InvalidOperation:
+
+                    error = (
+                        "Enter a valid GST rate."
+                    )
+
+        if error is None:
+
+            product.name = name
+            product.category = category
+            product.price = price
+            product.stock = stock
+            product.gst_rate = gst_rate
+            product.description = description
+
+            product.save()
+
+            messages.success(
+                request,
+                f"Product '{product.name}' updated successfully."
+            )
+
+            return redirect(
+                "product_list"
+            )
+
+    return render(
+        request,
+        "accounts/edit_product.html",
+        {
+            "product": product,
+            "form_data": form_data,
+            "error": error
+        }
+    )
+
+
+@login_required(
+    login_url="distributor_login"
+)
+def create_invoice(request):
+
+    error = None
+
+    customers = Customer.objects.all().order_by(
+        "name"
+    )
+
+    products = Product.objects.all().order_by(
+        "name"
+    )
+
+    selected_customer = ""
+
+    rows = [
+        {
+            "product_id": "",
+            "quantity": "1"
+        }
+    ]
+
+    if request.method == "POST":
+
+        selected_customer = request.POST.get(
+            "customer",
+            ""
+        ).strip()
+
+        product_ids = request.POST.getlist(
+            "product_id"
+        )
+
+        quantity_values = request.POST.getlist(
+            "quantity"
+        )
+
+        rows = []
+
+        row_count = max(
+            len(product_ids),
+            len(quantity_values)
+        )
+
+        for index in range(row_count):
+
+            product_id = (
+                product_ids[index]
+                if index < len(product_ids)
+                else ""
+            )
+
+            quantity = (
+                quantity_values[index]
+                if index < len(quantity_values)
+                else "1"
+            )
+
+            rows.append(
+                {
+                    "product_id": product_id,
+                    "quantity": quantity
+                }
+            )
+
+        if not rows:
+
+            rows = [
+                {
+                    "product_id": "",
+                    "quantity": "1"
+                }
+            ]
+
+        customer = None
+
+        if selected_customer.isdigit():
+
+            customer = Customer.objects.filter(
+                id=selected_customer
+            ).first()
+
+        if customer is None:
+
+            error = (
+                "Please select a valid customer."
+            )
+
+        elif not product_ids:
+
+            error = (
+                "Please add at least one product."
+            )
+
+        elif len(product_ids) != len(quantity_values):
+
+            error = (
+                "Invalid product rows. "
+                "Please try again."
+            )
+
+        validated_items = []
+
+        if error is None:
+
+            for index, (product_id, quantity_value) in enumerate(
+                zip(
+                    product_ids,
+                    quantity_values
+                ),
+                start=1
+            ):
+
+                if not product_id.strip():
+
+                    error = (
+                        f"Please select a product "
+                        f"in row {index}."
+                    )
+
+                    break
+
+                if not product_id.isdigit():
+
+                    error = (
+                        f"Invalid product in row {index}."
+                    )
+
+                    break
+
+                if not quantity_value.strip():
+
+                    error = (
+                        f"Quantity is required "
+                        f"in row {index}."
+                    )
+
+                    break
+
+                if not quantity_value.isdigit():
+
+                    error = (
+                        f"Quantity must be a whole number "
+                        f"in row {index}."
+                    )
+
+                    break
+
+                quantity = int(
+                    quantity_value
+                )
+
+                if quantity <= 0:
+
+                    error = (
+                        f"Quantity must be greater than "
+                        f"zero in row {index}."
+                    )
+
+                    break
+
+                product = Product.objects.filter(
+                    id=product_id
+                ).first()
+
+                if product is None:
+
+                    error = (
+                        f"Selected product in row "
+                        f"{index} does not exist."
+                    )
+
+                    break
+
+                try:
+
+                    unit_price = Decimal(
+                        str(product.price)
+                    )
+
+                    gst_rate = Decimal(
+                        str(product.gst_rate)
+                    )
+
+                    if (
+                        not unit_price.is_finite()
+                        or unit_price <= 0
+                    ):
+
+                        error = (
+                            f"Invalid price for "
+                            f"{product.name}."
+                        )
+
+                        break
+
+                    if (
+                        not gst_rate.is_finite()
+                        or gst_rate < 0
+                        or gst_rate > 100
+                    ):
+
+                        error = (
+                            f"Invalid GST rate for "
+                            f"{product.name}."
+                        )
+
+                        break
+
+                except (
+                    InvalidOperation,
+                    TypeError,
+                    ValueError
+                ):
+
+                    error = (
+                        f"Invalid price or GST for "
+                        f"{product.name}."
+                    )
+
+                    break
+
+                line_subtotal = (
+                    unit_price * quantity
+                ).quantize(
+                    Decimal("0.01"),
+                    rounding=ROUND_HALF_UP
+                )
+
+                line_gst = (
+                    line_subtotal
+                    * gst_rate
+                    / Decimal("100")
+                ).quantize(
+                    Decimal("0.01"),
+                    rounding=ROUND_HALF_UP
+                )
+
+                validated_items.append(
+                    {
+                        "product": product,
+                        "quantity": quantity,
+                        "unit_price": unit_price,
+                        "gst_rate": gst_rate,
+                        "line_total": line_subtotal,
+                        "line_gst": line_gst
+                    }
+                )
+
+        if error is None:
+
+            subtotal = sum(
+                (
+                    item["line_total"]
+                    for item in validated_items
+                ),
+                Decimal("0.00")
+            ).quantize(
+                Decimal("0.01"),
+                rounding=ROUND_HALF_UP
+            )
+
+            gst_amount = sum(
+                (
+                    item["line_gst"]
+                    for item in validated_items
+                ),
+                Decimal("0.00")
+            ).quantize(
+                Decimal("0.01"),
+                rounding=ROUND_HALF_UP
+            )
+
+            grand_total = (
+                subtotal + gst_amount
+            ).quantize(
+                Decimal("0.01"),
+                rounding=ROUND_HALF_UP
+            )
+
+            invoice_number = (
+                f"INV-{timezone.localdate():%Y%m%d}-"
+                f"{uuid4().hex[:8].upper()}"
+            )
+
+            with transaction.atomic():
+
+                invoice = Invoice.objects.create(
+                    invoice_number=invoice_number,
+                    customer=customer,
+                    subtotal=subtotal,
+                    gst_amount=gst_amount,
+                    grand_total=grand_total
+                )
+
+                invoice_items = []
+
+                for item in validated_items:
+
+                    invoice_items.append(
+                        InvoiceItem(
+                            invoice=invoice,
+                            product=item["product"],
+                            quantity=item["quantity"],
+                            unit_price=item["unit_price"],
+                            gst_rate=item["gst_rate"],
+                            line_total=item["line_total"]
+                        )
+                    )
+
+                InvoiceItem.objects.bulk_create(
+                    invoice_items
+                )
+
+            messages.success(
+                request,
+                (
+                    f"Invoice {invoice.invoice_number} "
+                    f"created successfully. "
+                    f"Grand Total: ₹{grand_total}"
+                )
+            )
+
+            return redirect(
+                "create_invoice"
+            )
+
+    return render(
+        request,
+        "accounts/create_invoice.html",
+        {
+            "customers": customers,
+            "products": products,
+            "rows": rows,
+            "selected_customer": selected_customer,
+            "error": error
         }
     )
 

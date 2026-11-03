@@ -1,3 +1,4 @@
+from decimal import Decimal
 from datetime import timedelta
 
 from django.db import models
@@ -104,3 +105,112 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+    # ============================================================
+# INVOICE MODEL
+# ============================================================
+
+class Invoice(models.Model):
+
+    STATUS_CHOICES = [
+        ("DRAFT", "Draft"),
+        ("UNPAID", "Unpaid"),
+        ("PAID", "Paid"),
+        ("CANCELLED", "Cancelled"),
+    ]
+
+    invoice_number = models.CharField(
+        max_length=30,
+        unique=True
+    )
+
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.PROTECT,
+        related_name="invoices"
+    )
+
+    invoice_date = models.DateField(
+        default=timezone.localdate
+    )
+
+    subtotal = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    gst_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    grand_total = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="DRAFT"
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    def __str__(self):
+        return self.invoice_number
+
+
+# ============================================================
+# INVOICE ITEM MODEL
+# ============================================================
+
+class InvoiceItem(models.Model):
+
+    invoice = models.ForeignKey(
+        Invoice,
+        on_delete=models.CASCADE,
+        related_name="items"
+    )
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.PROTECT,
+        related_name="invoice_items"
+    )
+
+    quantity = models.PositiveIntegerField(
+        default=1
+    )
+
+    unit_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2
+    )
+
+    gst_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    line_total = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return f"{self.product.name} x {self.quantity}"

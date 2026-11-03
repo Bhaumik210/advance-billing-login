@@ -90,6 +90,24 @@ urlpatterns = [
     ),
 
     path(
+        "products/<int:product_id>/edit/",
+        views.edit_product,
+        name="edit_product"
+    ),
+
+    path(
+        "products/<int:product_id>/delete/",
+        views.delete_product,
+        name="delete_product"
+    ),
+
+    path(
+        "invoices/create/",
+        views.create_invoice,
+        name="create_invoice"
+    ),
+
+    path(
         "dashboard/",
         views.dashboard,
         name="dashboard"
