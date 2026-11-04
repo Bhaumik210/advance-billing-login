@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Edit Distributor Profile</title>
 
     <style>
@@ -22,13 +20,14 @@
         }
 
         .navbar {
-            height: 70px;
+            min-height: 70px;
             background: #ffffff;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 8%;
+            gap: 16px;
         }
 
         .navbar h2 {
@@ -44,7 +43,7 @@
 
         .container {
             width: 90%;
-            max-width: 620px;
+            max-width: 700px;
             margin: 45px auto;
         }
 
@@ -60,6 +59,7 @@
         .page-header p {
             color: #6b7280;
             font-size: 14px;
+            line-height: 1.5;
         }
 
         .form-card {
@@ -80,6 +80,14 @@
             font-size: 14px;
         }
 
+        .form-section-title {
+            font-size: 17px;
+            margin: 8px 0 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #111827;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -92,35 +100,74 @@
             color: #374151;
         }
 
-        input {
+        input,
+        textarea {
             width: 100%;
             padding: 12px 14px;
             border: 1px solid #d1d5db;
             border-radius: 8px;
+            font-family: inherit;
             font-size: 15px;
             outline: none;
+            background: #fff;
         }
 
-        input:focus {
+        textarea {
+            min-height: 95px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus {
             border-color: #2563eb;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        .help-text {
+            display: block;
+            margin-top: 7px;
+            color: #6b7280;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .logo-preview {
+            display: block;
+            max-width: 130px;
+            max-height: 100px;
+            object-fit: contain;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 6px;
+            margin-bottom: 12px;
+            background: #fff;
         }
 
         .button-row {
             display: flex;
             gap: 12px;
+            margin-top: 26px;
         }
 
-        .save-btn {
+        .save-btn,
+        .cancel-btn {
             flex: 1;
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 13px;
-            border: none;
             border-radius: 8px;
-            background: #2563eb;
-            color: #ffffff;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
+            text-decoration: none;
+        }
+
+        .save-btn {
+            border: none;
+            background: #2563eb;
+            color: #ffffff;
         }
 
         .save-btn:hover {
@@ -128,17 +175,9 @@
         }
 
         .cancel-btn {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 13px;
             border: 1px solid #d1d5db;
-            border-radius: 8px;
+            background: #ffffff;
             color: #374151;
-            text-decoration: none;
-            font-size: 15px;
-            font-weight: 600;
         }
 
         .cancel-btn:hover {
@@ -151,31 +190,43 @@
             color: #9ca3af;
             font-size: 12px;
         }
+
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 0 20px;
+            }
+
+            .container {
+                margin-top: 30px;
+            }
+
+            .form-card {
+                padding: 22px;
+            }
+
+            .page-header h1 {
+                font-size: 25px;
+            }
+
+            .button-row {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 
 <body>
 
 <nav class="navbar">
-
     <h2>Advance Billing System</h2>
-
-    <a href="{% url 'distributor_profile' %}">
-        Back to Profile
-    </a>
-
+    <a href="{% url 'distributor_profile' %}">Back to Profile</a>
 </nav>
 
 <div class="container">
 
     <div class="page-header">
-
         <h1>Edit Profile</h1>
-
-        <p>
-            Update your distributor account information.
-        </p>
-
+        <p>Update your personal and business information.</p>
     </div>
 
     <div class="form-card">
@@ -186,70 +237,131 @@
             </div>
         {% endif %}
 
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
 
             {% csrf_token %}
 
-            <div class="form-group">
+            <h3 class="form-section-title">Personal Information</h3>
 
-                <label for="name">
-                    Full Name
-                </label>
+            <div class="form-group">
+                <label for="name">Full Name</label>
 
                 <input
                     type="text"
                     id="name"
                     name="name"
-                    value="{{ request.user.get_full_name }}"
+                    value="{{ form_data.name }}"
                     minlength="2"
                     pattern="[A-Za-z ]+"
                     required
                 >
-
             </div>
 
             <div class="form-group">
-
-                <label for="email">
-                    Email Address
-                </label>
+                <label for="email">Email Address</label>
 
                 <input
                     type="email"
                     id="email"
                     name="email"
-                    value="{{ request.user.email }}"
+                    value="{{ form_data.email }}"
                     required
                 >
-
             </div>
 
             <div class="form-group">
-
-                <label for="phone">
-                    Phone Number
-                </label>
+                <label for="phone">Phone Number</label>
 
                 <input
                     type="tel"
                     id="phone"
                     name="phone"
-                    value="{{ profile.phone }}"
-                    minlength="10"
+                    value="{{ form_data.phone }}"
                     maxlength="10"
+                    minlength="10"
                     pattern="[0-9]{10}"
                     inputmode="numeric"
                     required
                 >
+            </div>
 
+            <h3 class="form-section-title">Business Information</h3>
+
+            <div class="form-group">
+                <label for="business_name">Business Name</label>
+
+                <input
+                    type="text"
+                    id="business_name"
+                    name="business_name"
+                    value="{{ form_data.business_name }}"
+                    maxlength="150"
+                    placeholder="Enter your business name"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="business_address">Business Address</label>
+
+                <textarea
+                    id="business_address"
+                    name="business_address"
+                    rows="3"
+                    placeholder="Enter your complete business address"
+                >{{ form_data.business_address }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="gstin">GSTIN Number</label>
+
+                <input
+                    type="text"
+                    id="gstin"
+                    name="gstin"
+                    value="{{ form_data.gstin }}"
+                    maxlength="15"
+                    minlength="15"
+                    style="text-transform: uppercase;"
+                    placeholder="15-character GSTIN (optional)"
+                >
+
+                <small class="help-text">
+                    If you do not have a GSTIN, leave this field blank.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="logo">Company Logo</label>
+
+                {% if profile.logo %}
+                    <img
+                        src="{{ profile.logo.url }}"
+                        alt="Current company logo"
+                        class="logo-preview"
+                    >
+
+                    <small class="help-text">
+                        Current logo. Select a new file only if you want to replace it.
+                    </small>
+                {% endif %}
+
+                <input
+                    type="file"
+                    id="logo"
+                    name="logo"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                >
+
+                <small class="help-text">
+                    Allowed formats: JPG, JPEG, PNG, WEBP.
+                    Maximum size: 2 MB.
+                    Leave empty to keep the current logo.
+                </small>
             </div>
 
             <div class="button-row">
 
-                <button
-                    type="submit"
-                    class="save-btn"
-                >
+                <button type="submit" class="save-btn">
                     Save Changes
                 </button>
 

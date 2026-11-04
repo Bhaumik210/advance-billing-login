@@ -3,11 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Distributor Profile</title>
 
@@ -94,6 +90,7 @@
         .avatar {
             width: 70px;
             height: 70px;
+            min-width: 70px;
             border-radius: 50%;
             background: #2563eb;
             color: #ffffff;
@@ -102,6 +99,17 @@
             justify-content: center;
             font-size: 28px;
             font-weight: bold;
+        }
+
+        .company-logo {
+            width: 75px;
+            height: 75px;
+            min-width: 75px;
+            border-radius: 12px;
+            object-fit: contain;
+            border: 1px solid #e5e7eb;
+            padding: 5px;
+            background: #ffffff;
         }
 
         .profile-title h2 {
@@ -113,10 +121,24 @@
         .profile-title p {
             color: #6b7280;
             font-size: 14px;
+            margin-top: 4px;
         }
 
         .profile-details {
             padding: 30px 32px;
+        }
+
+        .section-title {
+            font-size: 17px;
+            color: #111827;
+            font-weight: 700;
+            padding-bottom: 12px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .business-section {
+            margin-top: 28px;
         }
 
         .detail-row {
@@ -139,6 +161,8 @@
         .value {
             font-size: 15px;
             color: #111827;
+            overflow-wrap: anywhere;
+            line-height: 1.5;
         }
 
         .status {
@@ -218,207 +242,186 @@
 
 <body>
 
-<nav class="navbar">
+    <nav class="navbar">
+        <h2>Advance Billing System</h2>
+        <span>Distributor Portal</span>
+    </nav>
 
-    <h2>
-        Advance Billing System
-    </h2>
+    <div class="container">
 
-    <span>
-        Distributor Portal
-    </span>
+        <div class="page-header">
+            <h1>Distributor Profile</h1>
+            <p>View and manage your distributor account information.</p>
+        </div>
 
-</nav>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="success-message">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
 
-<div class="container">
+        <div class="profile-card">
 
-    <div class="page-header">
+            <div class="profile-top">
 
-        <h1>
-            Distributor Profile
-        </h1>
+                {% if profile and profile.logo %}
+                    <img
+                        src="{{ profile.logo.url }}"
+                        alt="Company Logo"
+                        class="company-logo"
+                    >
+                {% else %}
+                    <div class="avatar">
+                        {{ request.user.username|first|upper }}
+                    </div>
+                {% endif %}
 
-        <p>
-            View and manage your distributor account information.
-        </p>
+                <div class="profile-title">
 
-    </div>
+                    <h2>
+                        {% if request.user.get_full_name %}
+                            {{ request.user.get_full_name }}
+                        {% else %}
+                            {{ request.user.username }}
+                        {% endif %}
+                    </h2>
 
-    {% if messages %}
+                    <p>Distributor Account</p>
 
-        {% for message in messages %}
+                    {% if profile and profile.business_name %}
+                        <p>{{ profile.business_name }}</p>
+                    {% endif %}
 
-            <div class="success-message">
-                {{ message }}
+                </div>
+
             </div>
 
-        {% endfor %}
+            <div class="profile-details">
 
-    {% endif %}
+                <h3 class="section-title">Personal Information</h3>
 
-    <div class="profile-card">
+                <div class="detail-row">
+                    <div class="label">Full Name</div>
+                    <div class="value">
+                        {% if request.user.get_full_name %}
+                            {{ request.user.get_full_name }}
+                        {% else %}
+                            Not added
+                        {% endif %}
+                    </div>
+                </div>
 
-        <div class="profile-top">
-
-            <div class="avatar">
-                {{ request.user.username|first|upper }}
-            </div>
-
-            <div class="profile-title">
-
-                <h2>
-
-                    {% if request.user.get_full_name %}
-
-                        {{ request.user.get_full_name }}
-
-                    {% else %}
-
+                <div class="detail-row">
+                    <div class="label">Username</div>
+                    <div class="value">
                         {{ request.user.username }}
+                    </div>
+                </div>
 
-                    {% endif %}
+                <div class="detail-row">
+                    <div class="label">Email Address</div>
+                    <div class="value">
+                        {% if request.user.email %}
+                            {{ request.user.email }}
+                        {% else %}
+                            Not added
+                        {% endif %}
+                    </div>
+                </div>
 
-                </h2>
+                <div class="detail-row">
+                    <div class="label">Phone Number</div>
+                    <div class="value">
+                        {{ phone|default:"Not added" }}
+                    </div>
+                </div>
 
-                <p>
-                    Distributor Account
-                </p>
+                <div class="detail-row">
+                    <div class="label">Account Type</div>
+                    <div class="value">Distributor</div>
+                </div>
 
+                <div class="detail-row">
+                    <div class="label">Account Status</div>
+                    <div class="value">
+                        <span class="status">Active</span>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="label">Joined On</div>
+                    <div class="value">
+                        {{ request.user.date_joined|date:"d M Y" }}
+                    </div>
+                </div>
+
+                <div class="business-section">
+
+                    <h3 class="section-title">Business Information</h3>
+
+                    <div class="detail-row">
+                        <div class="label">Business Name</div>
+                        <div class="value">
+                            {% if profile and profile.business_name %}
+                                {{ profile.business_name }}
+                            {% else %}
+                                Not added
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <div class="label">Business Address</div>
+                        <div class="value">
+                            {% if profile and profile.business_address %}
+                                {{ profile.business_address|linebreaksbr }}
+                            {% else %}
+                                Not added
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <div class="label">GSTIN Number</div>
+                        <div class="value">
+                            {% if profile and profile.gstin %}
+                                {{ profile.gstin }}
+                            {% else %}
+                                Not added
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <div class="label">Company Logo</div>
+                        <div class="value">
+                            {% if profile and profile.logo %}
+                                Uploaded
+                            {% else %}
+                                Not uploaded
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="profile-actions">
+                <a href="{% url 'edit_distributor_profile' %}" class="edit-btn">
+                    Edit Profile
+                </a>
             </div>
 
         </div>
 
-        <div class="profile-details">
-
-            <div class="detail-row">
-
-                <div class="label">
-                    Full Name
-                </div>
-
-                <div class="value">
-
-                    {% if request.user.get_full_name %}
-
-                        {{ request.user.get_full_name }}
-
-                    {% else %}
-
-                        Not added
-
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-            <div class="detail-row">
-
-                <div class="label">
-                    Username
-                </div>
-
-                <div class="value">
-                    {{ request.user.username }}
-                </div>
-
-            </div>
-
-            <div class="detail-row">
-
-                <div class="label">
-                    Email Address
-                </div>
-
-                <div class="value">
-
-                    {% if request.user.email %}
-
-                        {{ request.user.email }}
-
-                    {% else %}
-
-                        Not added
-
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-            <div class="detail-row">
-
-                <div class="label">
-                    Phone Number
-                </div>
-
-                <div class="value">
-                    {{ phone }}
-                </div>
-
-            </div>
-
-            <div class="detail-row">
-
-                <div class="label">
-                    Account Type
-                </div>
-
-                <div class="value">
-                    Distributor
-                </div>
-
-            </div>
-
-            <div class="detail-row">
-
-                <div class="label">
-                    Account Status
-                </div>
-
-                <div class="value">
-
-                    <span class="status">
-                        Active
-                    </span>
-
-                </div>
-
-            </div>
-
-            <div class="detail-row">
-
-                <div class="label">
-                    Joined On
-                </div>
-
-                <div class="value">
-                    {{ request.user.date_joined|date:"d M Y" }}
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="profile-actions">
-
-            <a
-                href="{% url 'edit_distributor_profile' %}"
-                class="edit-btn"
-            >
-                Edit Profile
-            </a>
-
+        <div class="footer">
+            Advance Billing System with QR
         </div>
 
     </div>
-
-    <div class="footer">
-        Advance Billing System with QR
-    </div>
-
-</div>
 
 </body>
-
 </html>

@@ -108,6 +108,12 @@ urlpatterns = [
     ),
 
     path(
+        "invoices/<int:invoice_id>/pdf/",
+        views.download_invoice_pdf,
+        name="download_invoice_pdf"
+    ),
+
+    path(
         "dashboard/",
         views.dashboard,
         name="dashboard"

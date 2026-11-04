@@ -40,6 +40,28 @@ class DistributorProfile(models.Model):
         max_length=10
     )
 
+    # Business Details
+    business_name = models.CharField(
+        max_length=150,
+        blank=True
+    )
+
+    business_address = models.TextField(
+        blank=True
+    )
+
+    gstin = models.CharField(
+        max_length=15,
+        blank=True
+    )
+
+    # Company Logo
+    logo = models.ImageField(
+        upload_to="company_logos/",
+        blank=True,
+        null=True
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True
     )

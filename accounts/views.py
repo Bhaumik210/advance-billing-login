@@ -1,3 +1,4 @@
+from PIL import Image
 import random
 import re
 
@@ -493,8 +494,6 @@ def verify_otp(request):
             "error": error
         }
     )
-
-
 def forgot_password(request):
 
     return render(
@@ -507,25 +506,21 @@ def forgot_password(request):
     login_url="distributor_login"
 )
 def distributor_profile(request):
+    # Fetch the complete profile so business details and logo
+    # are available to distributor_profile.html.
+    profile, created = DistributorProfile.objects.get_or_create(
+        user=request.user,
+        defaults={"phone": ""}
+    )
 
-    phone = "Not added"
-
-    try:
-
-        phone = (
-            request.user
-            .distributor_profile
-            .phone
-        )
-
-    except DistributorProfile.DoesNotExist:
-        pass
+    phone = profile.phone or "Not added"
 
     return render(
         request,
         "accounts/distributor_profile.html",
         {
-            "phone": phone
+            "profile": profile,
+            "phone": phone,
         }
     )
 
@@ -534,161 +529,131 @@ def distributor_profile(request):
     login_url="distributor_login"
 )
 def edit_distributor_profile(request):
-
     user = request.user
 
-    profile, created = (
-        DistributorProfile.objects
-        .get_or_create(
-            user=user,
-            defaults={
-                "phone": ""
-            }
-        )
+    profile, created = DistributorProfile.objects.get_or_create(
+        user=user,
+        defaults={"phone": ""}
     )
 
     error = None
+    form_data = {
+        "name": user.get_full_name(),
+        "email": user.email,
+        "phone": profile.phone or "",
+        "business_name": profile.business_name or "",
+        "business_address": profile.business_address or "",
+        "gstin": profile.gstin or "",
+    }
 
     if request.method == "POST":
+        full_name = request.POST.get("name", "").strip()
+        email = request.POST.get("email", "").strip().lower()
+        phone = request.POST.get("phone", "").strip()
+        business_name = request.POST.get("business_name", "").strip()
+        business_address = request.POST.get("business_address", "").strip()
+        gstin = request.POST.get("gstin", "").strip().upper()
+        logo_file = request.FILES.get("logo")
 
-        full_name = request.POST.get(
-            "name",
-            ""
-        ).strip()
+        form_data = {
+            "name": full_name,
+            "email": email,
+            "phone": phone,
+            "business_name": business_name,
+            "business_address": business_address,
+            "gstin": gstin,
+        }
 
-        email = request.POST.get(
-            "email",
-            ""
-        ).strip().lower()
-
-        phone = request.POST.get(
-            "phone",
-            ""
-        ).strip()
-
+        # Validate personal information.
         if not full_name:
-
-            error = (
-                "Full name is required."
-            )
-
+            error = "Full name is required."
         elif len(full_name) < 2:
-
-            error = (
-                "Full name must contain "
-                "at least 2 characters."
-            )
-
-        elif not re.fullmatch(
-            r"[A-Za-z ]+",
-            full_name
-        ):
-
-            error = (
-                "Full name should contain "
-                "only letters and spaces."
-            )
-
+            error = "Full name must contain at least 2 characters."
+        elif not re.fullmatch(r"[A-Za-z ]+", full_name):
+            error = "Full name should contain only letters and spaces."
         elif not email:
-
-            error = (
-                "Email address is required."
-            )
-
+            error = "Email address is required."
         else:
-
             try:
-
                 validate_email(email)
-
             except ValidationError:
-
-                error = (
-                    "Enter a valid email address."
-                )
+                error = "Enter a valid email address."
 
         if error is None:
-
             duplicate_email = (
                 User.objects
-                .filter(
-                    email__iexact=email
-                )
-                .exclude(
-                    id=user.id
-                )
+                .filter(email__iexact=email)
+                .exclude(id=user.id)
                 .exists()
             )
-
             if duplicate_email:
-
-                error = (
-                    "This email is already "
-                    "used by another account."
-                )
+                error = "This email is already used by another account."
 
         if error is None:
-
             if not phone:
-
-                error = (
-                    "Phone number is required."
-                )
-
+                error = "Phone number is required."
             elif not phone.isdigit():
-
-                error = (
-                    "Phone number should "
-                    "contain only digits."
-                )
-
+                error = "Phone number should contain only digits."
             elif len(phone) != 10:
+                error = "Phone number must contain exactly 10 digits."
 
-                error = (
-                    "Phone number must contain "
-                    "exactly 10 digits."
-                )
+        # Validate optional business information.
+        if error is None and len(business_name) > 150:
+            error = "Business name cannot exceed 150 characters."
+
+        if error is None and gstin:
+            gstin_pattern = r"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$"
+            if not re.fullmatch(gstin_pattern, gstin):
+                error = "Enter a valid 15-character GSTIN, or leave it blank."
+
+        # Validate uploaded logo, if a new file was selected.
+        if error is None and logo_file:
+            if logo_file.size > 2 * 1024 * 1024:
+                error = "Company logo must be 2 MB or smaller."
+            else:
+                try:
+                    logo_image = Image.open(logo_file)
+                    image_format = logo_image.format
+                    logo_image.verify()
+
+                    if image_format not in {"JPEG", "PNG", "WEBP"}:
+                        error = "Logo must be a JPG, JPEG, PNG, or WEBP image."
+                    else:
+                        logo_file.seek(0)
+                except (OSError, ValueError):
+                    error = "Please upload a valid image file."
 
         if error is None:
-
-            name_parts = full_name.split(
-                " ",
-                1
-            )
-
+            name_parts = full_name.split(" ", 1)
             user.first_name = name_parts[0]
-
-            if len(name_parts) > 1:
-                user.last_name = name_parts[1]
-            else:
-                user.last_name = ""
-
+            user.last_name = name_parts[1] if len(name_parts) > 1 else ""
             user.email = email
+
             profile.phone = phone
+            profile.business_name = business_name
+            profile.business_address = business_address
+            profile.gstin = gstin
+
+            # Keep the existing logo when no new logo is uploaded.
+            if logo_file:
+                profile.logo = logo_file
 
             with transaction.atomic():
-
                 user.save()
                 profile.save()
 
-            messages.success(
-                request,
-                "Profile updated successfully."
-            )
-
-            return redirect(
-                "distributor_profile"
-            )
+            messages.success(request, "Profile updated successfully.")
+            return redirect("distributor_profile")
 
     return render(
         request,
         "accounts/edit_distributor_profile.html",
         {
             "error": error,
-            "profile": profile
+            "profile": profile,
+            "form_data": form_data,
         }
     )
-
 
 def add_customer(request):
 
@@ -1030,8 +995,6 @@ def edit_customer(
             "error": error
         }
     )
-
-
 @login_required(
     login_url="distributor_login"
 )
@@ -1571,11 +1534,23 @@ def edit_product(
 
 
 @login_required(
-    login_url="distributor_login"
+        login_url="distributor_login"
 )
 def create_invoice(request):
 
     error = None
+
+    created_invoice = None
+    created_invoice_id = request.GET.get("created_invoice", "").strip()
+    allowed_invoice_ids = request.session.get("created_invoice_ids", [])
+
+    if (
+        created_invoice_id.isdigit()
+        and int(created_invoice_id) in allowed_invoice_ids
+    ):
+        created_invoice = Invoice.objects.filter(
+            pk=created_invoice_id
+        ).first()
 
     customers = Customer.objects.all().order_by(
         "name"
@@ -2048,6 +2023,20 @@ def create_invoice(request):
                     invoice_items
                 )
 
+            created_invoice_ids = request.session.get(
+                "created_invoice_ids",
+                []
+            )
+
+            if not isinstance(created_invoice_ids, list):
+                created_invoice_ids = []
+
+            created_invoice_ids.append(invoice.pk)
+
+            request.session["created_invoice_ids"] = (
+                created_invoice_ids[-100:]
+            )
+
             messages.success(
                 request,
                 (
@@ -2057,8 +2046,10 @@ def create_invoice(request):
                 )
             )
 
+            from django.urls import reverse
+
             return redirect(
-                "create_invoice"
+                f"{reverse('create_invoice')}?created_invoice={invoice.pk}"
             )
 
     return render(
@@ -2069,7 +2060,8 @@ def create_invoice(request):
             "products": products,
             "rows": rows,
             "selected_customer": selected_customer,
-            "error": error
+            "error": error,
+            "created_invoice": created_invoice
         }
     )
 
@@ -2081,3 +2073,477 @@ def dashboard(request):
         request,
         "accounts/dashboard.html"
     )
+
+
+@login_required(login_url="distributor_login")
+def download_invoice_pdf(request, invoice_id):
+    """Generate a branded PDF for an invoice created in this session."""
+
+    from io import BytesIO
+    from pathlib import Path
+    from xml.sax.saxutils import escape
+
+    from django.conf import settings
+    from django.http import Http404, HttpResponse
+
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.platypus import (
+        Image as ReportLabImage,
+        Paragraph,
+        SimpleDocTemplate,
+        Spacer,
+        Table,
+        TableStyle,
+    )
+
+    allowed_invoice_ids = request.session.get(
+        "created_invoice_ids",
+        []
+    )
+
+    if invoice_id not in allowed_invoice_ids:
+        raise Http404("Invoice not found.")
+
+    invoice = get_object_or_404(
+        Invoice.objects.select_related("customer").prefetch_related(
+            "items__product"
+        ),
+        pk=invoice_id
+    )
+
+    profile = DistributorProfile.objects.filter(
+        user=request.user
+    ).first()
+
+    # Use an available Unicode font where possible.
+    font_regular = "Helvetica"
+    font_bold = "Helvetica-Bold"
+
+    font_candidates = [
+        Path("C:/Windows/Fonts/Nirmala.ttf"),
+        Path("C:/Windows/Fonts/arial.ttf"),
+        Path("/usr/share/fonts/truetype/noto/NotoSansGujarati-Regular.ttf"),
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+        Path(settings.BASE_DIR) / "static/fonts/NotoSansGujarati-Regular.ttf",
+    ]
+
+    for font_path in font_candidates:
+        if font_path.exists():
+            try:
+                pdfmetrics.registerFont(
+                    TTFont("InvoiceUnicode", str(font_path))
+                )
+                font_regular = "InvoiceUnicode"
+                font_bold = "InvoiceUnicode"
+                break
+            except Exception:
+                continue
+
+    styles = getSampleStyleSheet()
+
+    styles.add(ParagraphStyle(
+        name="PdfBrand",
+        parent=styles["Normal"],
+        fontName=font_bold,
+        fontSize=17,
+        leading=21,
+        textColor=colors.HexColor("#1D4D40"),
+        spaceAfter=3
+    ))
+
+    styles.add(ParagraphStyle(
+        name="PdfSmall",
+        parent=styles["Normal"],
+        fontName=font_regular,
+        fontSize=9,
+        leading=13,
+        textColor=colors.HexColor("#53645D")
+    ))
+
+    styles.add(ParagraphStyle(
+        name="PdfTitle",
+        parent=styles["Normal"],
+        fontName=font_bold,
+        fontSize=16,
+        leading=19,
+        alignment=TA_RIGHT,
+        textColor=colors.HexColor("#1D4D40")
+    ))
+
+    styles.add(ParagraphStyle(
+        name="PdfSection",
+        parent=styles["Normal"],
+        fontName=font_bold,
+        fontSize=9,
+        leading=12,
+        textColor=colors.HexColor("#1D4D40"),
+        spaceAfter=6
+    ))
+
+    styles.add(ParagraphStyle(
+        name="PdfCell",
+        parent=styles["Normal"],
+        fontName=font_regular,
+        fontSize=9,
+        leading=12
+    ))
+
+    styles.add(ParagraphStyle(
+        name="PdfRight",
+        parent=styles["Normal"],
+        fontName=font_regular,
+        fontSize=9,
+        leading=12,
+        alignment=TA_RIGHT
+    ))
+
+    styles.add(ParagraphStyle(
+        name="PdfHeader",
+        parent=styles["Normal"],
+        fontName=font_bold,
+        fontSize=8.5,
+        leading=11,
+        alignment=TA_CENTER,
+        textColor=colors.white
+    ))
+
+    styles.add(ParagraphStyle(
+        name="PdfGrand",
+        parent=styles["Normal"],
+        fontName=font_bold,
+        fontSize=11,
+        leading=14,
+        textColor=colors.HexColor("#1D4D40")
+    ))
+
+    def safe(value):
+        return escape(
+            str(value or "")
+        ).replace("\r\n", "<br/>").replace("\n", "<br/>")
+
+    def money(value):
+        amount = Decimal(str(value or "0"))
+        return f"INR {amount:,.2f}"
+
+    business_name = (
+        profile.business_name.strip()
+        if profile and profile.business_name
+        else (
+            request.user.get_full_name()
+            or request.user.username
+            or "Business"
+        )
+    )
+
+    business_address = profile.business_address if profile else ""
+    business_phone = profile.phone if profile else ""
+    business_gstin = profile.gstin if profile else ""
+
+    brand_details = []
+
+    if business_address:
+        brand_details.append(business_address)
+
+    if business_phone:
+        brand_details.append(f"Phone: {business_phone}")
+
+    if request.user.email:
+        brand_details.append(f"Email: {request.user.email}")
+
+    if business_gstin:
+        brand_details.append(f"GSTIN: {business_gstin}")
+
+    brand_info = [
+        Paragraph(safe(business_name), styles["PdfBrand"]),
+        Paragraph(
+            "<br/>".join(safe(value) for value in brand_details) or " ",
+            styles["PdfSmall"]
+        )
+    ]
+
+    # Load the uploaded company logo if available.
+    logo_element = Paragraph(" ", styles["PdfSmall"])
+
+    if profile and profile.logo:
+        try:
+            profile.logo.open("rb")
+            logo_data = BytesIO(profile.logo.read())
+            profile.logo.close()
+            logo_data.seek(0)
+
+            logo_element = ReportLabImage(
+                logo_data,
+                width=28 * mm,
+                height=22 * mm,
+                kind="proportional"
+            )
+        except Exception:
+            try:
+                profile.logo.close()
+            except Exception:
+                pass
+
+    story = []
+
+    invoice_heading = (
+        "DRAFT INVOICE"
+        if invoice.status == "DRAFT"
+        else "TAX INVOICE"
+    )
+
+    header_table = Table(
+        [[
+            logo_element,
+            brand_info,
+            Paragraph(safe(invoice_heading), styles["PdfTitle"])
+        ]],
+        colWidths=[30 * mm, 99 * mm, 45 * mm]
+    )
+
+    header_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F1F6F3")),
+        ("BOX", (0, 0), (-1, -1), 0.7, colors.HexColor("#D6E3DC")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("ALIGN", (2, 0), (2, 0), "RIGHT"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("TOPPADDING", (0, 0), (-1, -1), 12),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+    ]))
+
+    story.append(header_table)
+    story.append(Spacer(1, 16))
+
+    # Customer information.
+    customer_lines = [
+        f"<b>{safe(invoice.customer.name)}</b>"
+    ]
+
+    if invoice.customer.address:
+        customer_lines.append(safe(invoice.customer.address))
+
+    if invoice.customer.phone:
+        customer_lines.append(f"Phone: {safe(invoice.customer.phone)}")
+
+    if invoice.customer.email:
+        customer_lines.append(f"Email: {safe(invoice.customer.email)}")
+
+    bill_to = [
+        Paragraph("BILL TO", styles["PdfSection"]),
+        Paragraph("<br/>".join(customer_lines), styles["PdfSmall"])
+    ]
+
+    invoice_lines = [
+        f"<b>Invoice No:</b> {safe(invoice.invoice_number)}",
+        f"<b>Date:</b> {safe(invoice.invoice_date.strftime('%d %b %Y'))}",
+        f"<b>Status:</b> {safe(invoice.get_status_display())}"
+    ]
+
+    invoice_details = [
+        Paragraph("INVOICE DETAILS", styles["PdfSection"]),
+        Paragraph("<br/>".join(invoice_lines), styles["PdfSmall"])
+    ]
+
+    details_table = Table(
+        [[bill_to, invoice_details]],
+        colWidths=[87 * mm, 87 * mm]
+    )
+
+    details_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAF9")),
+        ("BOX", (0, 0), (-1, -1), 0.6, colors.HexColor("#D6E3DC")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#E1E8E4")),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 9),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 9),
+        ("TOPPADDING", (0, 0), (-1, -1), 11),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 11),
+    ]))
+
+    story.append(details_table)
+    story.append(Spacer(1, 18))
+
+    # Product and tax details.
+    item_rows = [[
+        Paragraph("PRODUCT", styles["PdfHeader"]),
+        Paragraph("QTY", styles["PdfHeader"]),
+        Paragraph("UNIT PRICE", styles["PdfHeader"]),
+        Paragraph("DISCOUNT", styles["PdfHeader"]),
+        Paragraph("GST", styles["PdfHeader"]),
+        Paragraph("LINE TOTAL", styles["PdfHeader"]),
+    ]]
+
+    for item in invoice.items.all():
+        original_total = Decimal(str(item.line_total))
+        discount_amount = Decimal(str(item.discount_amount))
+        discount_rate = Decimal(str(item.discount_rate))
+        gst_rate = Decimal(str(item.gst_rate))
+
+        taxable_amount = original_total - discount_amount
+
+        line_gst = (
+            taxable_amount * gst_rate / Decimal("100")
+        ).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        )
+
+        final_line_total = taxable_amount + line_gst
+
+        item_rows.append([
+            Paragraph(safe(item.product.name), styles["PdfCell"]),
+            Paragraph(str(item.quantity), styles["PdfRight"]),
+            Paragraph(money(item.unit_price), styles["PdfRight"]),
+            Paragraph(
+                f"{discount_rate:.2f}%<br/>{money(discount_amount)}",
+                styles["PdfRight"]
+            ),
+            Paragraph(f"{gst_rate:.2f}%", styles["PdfRight"]),
+            Paragraph(money(final_line_total), styles["PdfRight"]),
+        ])
+
+    if len(item_rows) == 1:
+        item_rows.append([
+            Paragraph("No items recorded.", styles["PdfCell"]),
+            "", "", "", "", ""
+        ])
+
+    items_table = Table(
+        item_rows,
+        colWidths=[
+            60 * mm,
+            15 * mm,
+            24 * mm,
+            30 * mm,
+            17 * mm,
+            28 * mm
+        ],
+        repeatRows=1
+    )
+
+    items_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1D4D40")),
+        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#D9E2DD")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [
+            colors.white,
+            colors.HexColor("#F7FAF8")
+        ]),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("ALIGN", (1, 1), (-1, -1), "RIGHT"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+    ]))
+
+    story.append(items_table)
+    story.append(Spacer(1, 16))
+
+    subtotal = Decimal(str(invoice.subtotal))
+    discount_total = Decimal(str(invoice.discount_amount))
+    taxable_total = subtotal - discount_total
+    gst_total = Decimal(str(invoice.gst_amount))
+    grand_total = Decimal(str(invoice.grand_total))
+
+    totals_rows = [
+        [
+            Paragraph("Subtotal", styles["PdfCell"]),
+            Paragraph(money(subtotal), styles["PdfRight"])
+        ],
+        [
+            Paragraph("Discount", styles["PdfCell"]),
+            Paragraph(money(discount_total), styles["PdfRight"])
+        ],
+        [
+            Paragraph("Taxable Amount", styles["PdfCell"]),
+            Paragraph(money(taxable_total), styles["PdfRight"])
+        ],
+        [
+            Paragraph("GST", styles["PdfCell"]),
+            Paragraph(money(gst_total), styles["PdfRight"])
+        ],
+        [
+            Paragraph("GRAND TOTAL", styles["PdfGrand"]),
+            Paragraph(money(grand_total), styles["PdfGrand"])
+        ],
+    ]
+
+    totals_table = Table(
+        totals_rows,
+        colWidths=[42 * mm, 38 * mm],
+        hAlign="RIGHT"
+    )
+
+    totals_table.setStyle(TableStyle([
+        ("LINEABOVE", (0, -1), (-1, -1), 1.1, colors.HexColor("#1D4D40")),
+        ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#EAF3EE")),
+        ("LEFTPADDING", (0, 0), (-1, -1), 9),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 9),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+    ]))
+
+    story.append(totals_table)
+    story.append(Spacer(1, 18))
+
+    story.append(Paragraph(
+        "Thank you for your business.",
+        styles["PdfSection"]
+    ))
+
+    story.append(Paragraph(
+        "This is a computer-generated invoice.",
+        styles["PdfSmall"]
+    ))
+
+    buffer = BytesIO()
+
+    def draw_footer(canvas, document):
+        canvas.saveState()
+        canvas.setStrokeColor(colors.HexColor("#D6E3DC"))
+        canvas.setLineWidth(0.5)
+        canvas.line(18 * mm, 13 * mm, A4[0] - 18 * mm, 13 * mm)
+        canvas.setFont(font_regular, 7)
+        canvas.setFillColor(colors.HexColor("#64736C"))
+        canvas.drawString(18 * mm, 8 * mm, business_name[:80])
+        canvas.drawRightString(
+            A4[0] - 18 * mm,
+            8 * mm,
+            f"Page {document.page}"
+        )
+        canvas.restoreState()
+
+    document = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=18 * mm,
+        leftMargin=18 * mm,
+        topMargin=15 * mm,
+        bottomMargin=20 * mm,
+        title=f"Invoice {invoice.invoice_number}",
+        author=business_name
+    )
+
+    document.build(
+        story,
+        onFirstPage=draw_footer,
+        onLaterPages=draw_footer
+    )
+
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type="application/pdf"
+    )
+
+    response["Content-Disposition"] = (
+        f'attachment; filename="{invoice.invoice_number}.pdf"'
+    )
+
+    buffer.close()
+    return response

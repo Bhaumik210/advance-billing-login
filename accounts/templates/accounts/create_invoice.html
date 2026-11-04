@@ -306,6 +306,13 @@
         {% endfor %}
     {% endif %}
 
+    {% if created_invoice %}
+        <div class="alert alert-success" style="padding: 14px 16px; margin: 14px 0 20px; border: 1px solid #b8dfcc; border-radius: 8px; background: #eef8f2; color: #205b3d;">
+            <strong>Invoice {{ created_invoice.invoice_number }}</strong> is ready.
+            <a href="{% url 'download_invoice_pdf' created_invoice.id %}" style="display: inline-block; margin-left: 12px; padding: 9px 14px; border-radius: 6px; background: #1d6b50; color: #ffffff; text-decoration: none; font-weight: 700;">Download Invoice PDF</a>
+        </div>
+    {% endif %}
+
     {% if error %}
         <div class="alert alert-error">
             {{ error }}
