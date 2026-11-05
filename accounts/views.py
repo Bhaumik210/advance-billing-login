@@ -2091,9 +2091,14 @@ def download_invoice_pdf(request, invoice_id):
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import mm
+
+    from reportlab.graphics import renderPDF
+    from reportlab.graphics.barcode import qr as reportlab_qr
+    from reportlab.graphics.shapes import Drawing
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
     from reportlab.platypus import (
+        Flowable,
         Image as ReportLabImage,
         Paragraph,
         SimpleDocTemplate,
@@ -2101,6 +2106,38 @@ def download_invoice_pdf(request, invoice_id):
         Table,
         TableStyle,
     )
+
+    class InvoiceQRFlowable(Flowable):
+        def __init__(self, value, size=24 * mm):
+            super().__init__()
+
+            qr_widget = reportlab_qr.QrCodeWidget(value)
+            x1, y1, x2, y2 = qr_widget.getBounds()
+
+            qr_width = x2 - x1
+            qr_height = y2 - y1
+
+            if qr_width <= 0 or qr_height <= 0:
+                raise ValueError("Could not generate invoice QR code.")
+
+            scale_x = size / qr_width
+            scale_y = size / qr_height
+
+            self.drawing = Drawing(
+                size,
+                size,
+                transform=[
+                    scale_x, 0, 0, scale_y,
+                    -x1 * scale_x, -y1 * scale_y,
+                ],
+            )
+            self.drawing.add(qr_widget)
+
+            self.width = size
+            self.height = size
+
+        def draw(self):
+            renderPDF.draw(self.drawing, self.canv, 0, 0)
 
     allowed_invoice_ids = request.session.get(
         "created_invoice_ids",
@@ -2490,7 +2527,56 @@ def download_invoice_pdf(request, invoice_id):
     ]))
 
     story.append(totals_table)
-    story.append(Spacer(1, 18))
+    story.append(Spacer(1, 10))
+
+    # Dynamically generate QR content for this invoice.
+    qr_payload = "\n".join([
+        "ADVANCE BILLING SYSTEM - INVOICE",
+        f"Invoice No: {invoice.invoice_number}",
+        f"Date: {invoice.invoice_date.strftime('%d %b %Y')}",
+        f"Customer: {invoice.customer.name}",
+        f"Grand Total: INR {grand_total:.2f}",
+        f"Status: {invoice.get_status_display()}",
+    ])
+
+    qr_details = [
+        Paragraph(
+            "SCAN FOR INVOICE SUMMARY",
+            styles["PdfSection"],
+        ),
+        Paragraph(
+            "Scan this QR code with your phone camera or QR scanner "
+            "to read the invoice details.",
+            styles["PdfSmall"],
+        ),
+        Spacer(1, 4),
+        Paragraph(
+            f"<b>Invoice No:</b> {safe(invoice.invoice_number)}",
+            styles["PdfSmall"],
+        ),
+    ]
+
+    qr_card = Table(
+        [[
+            InvoiceQRFlowable(qr_payload, size=24 * mm),
+            qr_details,
+        ]],
+        colWidths=[38 * mm, 136 * mm],
+        hAlign="LEFT",
+    )
+
+    qr_card.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAF9")),
+        ("BOX", (0, 0), (-1, -1), 0.6, colors.HexColor("#D6E3DC")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 7),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+    ]))
+
+    story.append(qr_card)
+    story.append(Spacer(1, 12))
 
     story.append(Paragraph(
         "Thank you for your business.",
