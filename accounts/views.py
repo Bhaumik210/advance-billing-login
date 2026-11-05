@@ -2042,7 +2042,7 @@ def create_invoice(request):
                 (
                     f"Invoice {invoice.invoice_number} "
                     f"created successfully. "
-                    f"Grand Total: ₹{grand_total}"
+                    f"Grand Total: â‚¹{grand_total}"
                 )
             )
 
@@ -2529,15 +2529,35 @@ def download_invoice_pdf(request, invoice_id):
     story.append(totals_table)
     story.append(Spacer(1, 10))
 
-    # Dynamically generate QR content for this invoice.
-    qr_payload = "\n".join([
+    # Dynamically retrieve invoice items and product details.
+    invoice_items = invoice.items.select_related("product").all()
+
+    product_summary = []
+    for index, item in enumerate(invoice_items, start=1):
+        product_name = " ".join(str(item.product.name).split())
+        product_summary.append(
+            f"{index}. {product_name} | "
+            f"Qty: {item.quantity} | "
+            f"Line Total: INR {item.line_total:.2f}"
+        )
+
+    # Generate complete dynamic QR content from database records.
+    qr_payload_lines = [
         "ADVANCE BILLING SYSTEM - INVOICE",
         f"Invoice No: {invoice.invoice_number}",
         f"Date: {invoice.invoice_date.strftime('%d %b %Y')}",
         f"Customer: {invoice.customer.name}",
-        f"Grand Total: INR {grand_total:.2f}",
+        f"Grand Total: INR {invoice.grand_total:.2f}",
         f"Status: {invoice.get_status_display()}",
-    ])
+        "",
+        "PRODUCT SUMMARY:",
+    ]
+
+    qr_payload_lines.extend(
+        product_summary if product_summary else ["No products found."]
+    )
+
+    qr_payload = "\n".join(qr_payload_lines)
 
     qr_details = [
         Paragraph(
