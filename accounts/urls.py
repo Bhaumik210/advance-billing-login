@@ -106,6 +106,11 @@ urlpatterns = [
         views.create_invoice,
         name="create_invoice"
     ),
+    path(
+        "invoices/",
+        views.invoice_list,
+        name="invoice_list"
+    ),
 
     path(
         "invoices/<int:invoice_id>/pdf/",

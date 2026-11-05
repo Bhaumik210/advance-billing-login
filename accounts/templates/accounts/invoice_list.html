@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Invoices | Advance Billing System</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#1f2937}
+.navbar{background:#fff;padding:20px 7%;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.navbar h2{margin:0;font-size:21px}
+.nav-links{display:flex;gap:18px;flex-wrap:wrap}
+.nav-links a{color:#374151;text-decoration:none;font-size:14px;font-weight:600}
+.nav-links a:hover,.nav-links .active{color:#0f766e}
+.container{width:86%;max-width:1400px;margin:35px auto}
+.header{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:25px}
+.header h1{margin:0 0 7px;font-size:27px}
+.subtitle{color:#6b7280;margin:0;font-size:14px}
+.btn{background:#0f766e;color:white;padding:12px 18px;border-radius:7px;text-decoration:none;font-size:14px;font-weight:600}
+.summary,.table-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px}
+.summary{padding:18px 22px;margin-bottom:20px}
+.summary span{color:#6b7280;font-size:13px}
+.summary strong{display:block;font-size:24px;margin-top:7px}
+.table-card{overflow:hidden}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:750px}
+th,td{padding:16px 18px;text-align:left;border-bottom:1px solid #e5e7eb;font-size:14px}
+th{background:#f9fafb;color:#4b5563;font-size:12px;text-transform:uppercase}
+tbody tr:hover{background:#f9fafb}
+.invoice-number{color:#0f766e;font-weight:700}
+.amount{font-weight:700;white-space:nowrap}
+.status{display:inline-block;padding:6px 10px;border-radius:20px;background:#f3f4f6;color:#374151;font-size:12px;font-weight:600}
+.empty{text-align:center;padding:55px 20px;color:#6b7280}
+.empty h3{color:#374151}
+.pagination{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px;padding:22px}
+.pagination a,.pagination span{padding:9px 13px;border:1px solid #e5e7eb;border-radius:6px;text-decoration:none;color:#374151;font-size:13px}
+.pagination a:hover,.pagination .current{background:#0f766e;color:white;border-color:#0f766e}
+.pagination .disabled{color:#9ca3af;background:#f9fafb}
+@media(max-width:650px){.navbar{padding:17px 5%}.container{width:92%;margin:25px auto}.header h1{font-size:23px}}
+</style>
+</head>
+<body>
+<div class="navbar">
+<h2>Advance Billing System</h2>
+<div class="nav-links">
+<a href="{% url 'dashboard' %}">Dashboard</a>
+<a href="{% url 'customer_list' %}">Customers</a>
+<a href="{% url 'create_invoice' %}">Create Invoice</a>
+<a href="{% url 'invoice_list' %}" class="active">Invoices</a>
+</div>
+</div>
+
+<main class="container">
+<div class="header">
+<div>
+<h1>All Invoices</h1>
+<p class="subtitle">View all existing invoice records.</p>
+</div>
+<a href="{% url 'create_invoice' %}" class="btn">+ Create Invoice</a>
+</div>
+
+<div class="summary">
+<span>Total Invoices</span>
+<strong>{{ page_obj.paginator.count }}</strong>
+</div>
+
+<div class="table-card">
+{% if page_obj.object_list %}
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Invoice Number</th>
+<th>Customer</th>
+<th>Date</th>
+<th>Product Count</th>
+<th>Total Amount</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+{% for invoice in page_obj %}
+<tr>
+<td class="invoice-number">{{ invoice.invoice_number }}</td>
+<td>{{ invoice.customer.name }}</td>
+<td>{{ invoice.invoice_date|date:"d M Y" }}</td>
+<td>{{ invoice.items.all|length }}</td>
+<td class="amount">₹{{ invoice.grand_total|floatformat:2 }}</td>
+<td><span class="status">{{ invoice.get_status_display }}</span></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="pagination">
+{% if page_obj.has_previous %}
+<a href="?page=1">First</a>
+<a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+{% else %}
+<span class="disabled">First</span>
+<span class="disabled">Previous</span>
+{% endif %}
+
+<span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+{% if page_obj.has_next %}
+<a href="?page={{ page_obj.next_page_number }}">Next</a>
+<a href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+{% else %}
+<span class="disabled">Next</span>
+<span class="disabled">Last</span>
+{% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty">
+<h3>No invoices found</h3>
+<p>You haven't created any invoices yet.</p>
+<a href="{% url 'create_invoice' %}" class="btn">Create Your First Invoice</a>
+</div>
+{% endif %}
+</div>
+</main>
+</body>
+</html>

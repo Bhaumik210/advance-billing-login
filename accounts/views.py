@@ -2042,7 +2042,7 @@ def create_invoice(request):
                 (
                     f"Invoice {invoice.invoice_number} "
                     f"created successfully. "
-                    f"Grand Total: â‚¹{grand_total}"
+                    f"Grand Total: Ã¢â€šÂ¹{grand_total}"
                 )
             )
 
@@ -2065,6 +2065,24 @@ def create_invoice(request):
         }
     )
 
+
+@login_required(login_url="distributor_login")
+def invoice_list(request):
+    invoices = (
+        Invoice.objects
+        .select_related("customer")
+        .prefetch_related("items")
+        .order_by("-invoice_date", "-id")
+    )
+
+    paginator = Paginator(invoices, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    return render(
+        request,
+        "accounts/invoice_list.html",
+        {"page_obj": page_obj}
+    )
 
 @login_required
 def dashboard(request):
@@ -2138,15 +2156,6 @@ def download_invoice_pdf(request, invoice_id):
 
         def draw(self):
             renderPDF.draw(self.drawing, self.canv, 0, 0)
-
-    allowed_invoice_ids = request.session.get(
-        "created_invoice_ids",
-        []
-    )
-
-    if invoice_id not in allowed_invoice_ids:
-        raise Http404("Invoice not found.")
-
     invoice = get_object_or_404(
         Invoice.objects.select_related("customer").prefetch_related(
             "items__product"
@@ -2547,6 +2556,7 @@ def download_invoice_pdf(request, invoice_id):
         f"Invoice No: {invoice.invoice_number}",
         f"Date: {invoice.invoice_date.strftime('%d %b %Y')}",
         f"Customer: {invoice.customer.name}",
+        f"Product Count: {len(product_summary)}",
         f"Grand Total: INR {invoice.grand_total:.2f}",
         f"Status: {invoice.get_status_display()}",
         "",
