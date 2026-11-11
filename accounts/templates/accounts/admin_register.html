@@ -1,0 +1,1428 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Registration | Advance Billing System</title>
+    <style>
+        :root {
+            --green: #007f5f;
+            --green-dark: #003f35;
+            --mint: #b8f3dc;
+            --cream: #fffaf1;
+            --text: #15221f;
+            --muted: #73817c;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            color: var(--text);
+            background: #f5f8f2;
+        }
+
+        .topbar {
+            min-height: 78px;
+            padding: 12px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            background: rgba(255,250,241,.96);
+            border-bottom: 1px solid #dce9df;
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            font-size: 20px;
+            font-weight: 800;
+            line-height: 1.15;
+        }
+
+        .brand-icon {
+            width: 46px;
+            height: 46px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            color: white;
+            background: linear-gradient(145deg,#00a878,#005a48);
+            font-size: 25px;
+            box-shadow: 0 7px 18px #007f5f30;
+        }
+
+        .brand small {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .top-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            font-size: 14px;
+            font-weight: 650;
+        }
+
+        .top-links span { white-space: nowrap; }
+
+        .secure-pill {
+            border: 1px solid #a8dfc7;
+            border-radius: 30px;
+            padding: 10px 17px;
+            color: #00694f;
+            background: #e8f8ef;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .main {
+            min-height: calc(100vh - 132px);
+            display: grid;
+            grid-template-columns: minmax(0, .92fr) minmax(560px, 1.08fr);
+            background:
+                radial-gradient(circle at 10% 90%,#087c5c 0,transparent 28%),
+                linear-gradient(120deg,#003d34 0%,#005b48 58%,#e8f4e9 58%);
+            overflow: hidden;
+        }
+
+        .hero {
+            position: relative;
+            padding: 55px 7% 45px 10%;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .hero:before, .hero:after {
+            content: "";
+            position: absolute;
+            border: 1px solid #37c99b35;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero:before {
+            width: 520px; height: 520px;
+            top: 90px; left: -260px;
+        }
+
+        .hero:after {
+            width: 360px; height: 360px;
+            bottom: -190px; right: -150px;
+        }
+
+        .hero-content, .hero-bottom { position: relative; z-index: 1; }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            border: 1px solid #36d5a0;
+            border-radius: 30px;
+            padding: 10px 17px;
+            color: #d5ffec;
+            background: #ffffff0d;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .hero h1 {
+            max-width: 570px;
+            margin: 24px 0 16px;
+            font-size: clamp(36px,4.2vw,59px);
+            line-height: 1.06;
+            letter-spacing: -2px;
+            font-weight: 850;
+        }
+
+        .hero h1 span { color: #8ef0c7; }
+
+        .hero-copy {
+            max-width: 490px;
+            color: #d4e9df;
+            font-size: 17px;
+            line-height: 1.7;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 32px;
+            max-width: 520px;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .feature-icon {
+            width: 48px; height: 48px;
+            flex: 0 0 48px;
+            display: grid;
+            place-items: center;
+            border: 1px solid #36d5a0;
+            border-radius: 14px;
+            color: #8ef0c7;
+            background: #ffffff0d;
+            font-size: 23px;
+        }
+
+        .feature strong { display: block; font-size: 14px; }
+        .feature small { display: block; margin-top: 5px; color: #b6d9cb; font-size: 12px; }
+
+        .dashboard-scene {
+            position: relative;
+            width: min(100%,510px);
+            margin: 35px auto 25px;
+            padding: 18px;
+            border: 1px solid #78d6b055;
+            border-radius: 20px;
+            background: linear-gradient(145deg,#ffffff18,#ffffff08);
+            box-shadow: 0 25px 65px #001c173d;
+            transform: perspective(900px) rotateY(4deg) rotateX(2deg);
+        }
+
+        .dash-top {
+            display: flex;
+            justify-content: space-between;
+            color: #e5fff3;
+            font-size: 12px;
+            font-weight: 700;
+            padding-bottom: 14px;
+        }
+
+        .dash-body { display: grid; grid-template-columns: 105px 1fr; gap: 12px; }
+
+        .dash-side {
+            padding: 12px 8px;
+            border-radius: 10px;
+            background: #002f2b;
+            color: #c5e9dc;
+            font-size: 10px;
+            line-height: 3;
+        }
+
+        .dash-side b { display: block; color: #75e5bd; }
+
+        .dash-content {
+            padding: 12px;
+            border-radius: 10px;
+            color: #173b35;
+            background: #e9faf3;
+        }
+
+        .dash-stats {
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap: 7px;
+        }
+
+        .dash-stat {
+            padding: 9px 6px;
+            border-radius: 7px;
+            background: white;
+            font-size: 9px;
+        }
+
+        .dash-stat strong { display: block; margin-top: 5px; font-size: 14px; }
+
+        .chart {
+            height: 75px;
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 7px;
+            background: white;
+            display: flex;
+            align-items: end;
+            gap: 9px;
+        }
+
+        .chart i {
+            display: block;
+            flex: 1;
+            border-radius: 4px 4px 0 0;
+            background: linear-gradient(#42d7a0,#008c67);
+        }
+
+        .chart i:nth-child(1){height:30%}
+        .chart i:nth-child(2){height:48%}
+        .chart i:nth-child(3){height:39%}
+        .chart i:nth-child(4){height:68%}
+        .chart i:nth-child(5){height:56%}
+        .chart i:nth-child(6){height:88%}
+
+        .qr-float {
+            position: absolute;
+            right: -13px;
+            bottom: -19px;
+            width: 83px;
+            height: 91px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: white;
+            color: #064a3c;
+            box-shadow: 0 12px 30px #001c1740;
+            font-size: 37px;
+        }
+
+        .hero-tagline {
+            color: #a5f4d3;
+            font-size: 25px;
+            font-weight: 650;
+            font-style: italic;
+            letter-spacing: .5px;
+        }
+
+        .form-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 35px 6%;
+            background: linear-gradient(140deg,#eaf6ed,#f9f4e9);
+        }
+
+        .register-card {
+            width: 100%;
+            max-width: 760px;
+            padding: 36px 38px 28px;
+            border: 1px solid #ffffff;
+            border-radius: 27px;
+            background: rgba(255,253,247,.96);
+            box-shadow: 0 25px 75px #003d3425, 0 3px 12px #003d3410;
+        }
+
+        .form-heading { text-align: center; margin-bottom: 27px; }
+
+        .form-shield {
+            width: 66px;
+            height: 66px;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 12px;
+            border-radius: 22px;
+            color: #007f5f;
+            background: linear-gradient(145deg,#d9f8e9,#a9e9ce);
+            font-size: 33px;
+            box-shadow: 0 9px 24px #00875e1c;
+        }
+
+        .form-heading h2 {
+            margin: 0;
+            color: #14241f;
+            font-size: clamp(27px,3vw,36px);
+            font-weight: 850;
+            letter-spacing: -1px;
+        }
+
+        .form-heading p { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 19px 20px;
+        }
+
+        .field { min-width: 0; }
+        .field.full { grid-column: 1 / -1; }
+
+        .field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #20332c;
+            font-size: 13px;
+            font-weight: 750;
+        }
+
+        .required { color: #e24b4b; }
+
+        .input-wrap { position: relative; }
+
+        .input-icon {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            color: #168265;
+            font-size: 17px;
+            pointer-events: none;
+        }
+
+        .field input {
+            width: 100%;
+            height: 49px;
+            padding: 0 43px;
+            border: 1px solid #d6ded8;
+            border-radius: 11px;
+            outline: none;
+            color: #172c24;
+            background: #fffefa;
+            font: inherit;
+            font-size: 13px;
+            transition: border .2s, box-shadow .2s, background .2s;
+        }
+
+        .field input::placeholder { color: #9aa69f; }
+
+        .field input:focus {
+            border-color: #159b72;
+            background: white;
+            box-shadow: 0 0 0 4px #159b7218;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            border: 0;
+            padding: 5px;
+            color: #61766b;
+            background: transparent;
+            cursor: pointer;
+            font-size: 17px;
+        }
+
+        .strength-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: 9px;
+        }
+
+        .strength-bar {
+            height: 7px;
+            flex: 1;
+            border-radius: 10px;
+            background: #e4e9e4;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            width: 0;
+            height: 100%;
+            border-radius: inherit;
+            background: #dc5555;
+            transition: width .2s, background .2s;
+        }
+
+        .strength-label {
+            min-width: 92px;
+            text-align: right;
+            color: #78857e;
+            font-size: 11px;
+            font-weight: 650;
+        }
+
+        .hint { margin-top: 7px; color: #829087; font-size: 11px; }
+
+        .terms {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 22px 0 18px;
+            color: #52635a;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .terms input { width: 16px; height: 16px; accent-color: #00865f; margin: 1px 0 0; }
+        .terms a { color: #00825f; font-weight: 700; text-decoration: none; }
+
+        .register-btn {
+            width: 100%;
+            min-height: 54px;
+            border: 0;
+            border-radius: 13px;
+            color: white;
+            background: linear-gradient(105deg,#006b50,#00a978);
+            box-shadow: 0 9px 22px #00845d35;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform .2s, box-shadow .2s, filter .2s;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 13px 28px #00845d45;
+            filter: brightness(1.04);
+        }
+
+        .preview-note {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin-top: 15px;
+            padding: 12px 14px;
+            border: 1px solid #c8e9d8;
+            border-radius: 11px;
+            color: #276b51;
+            background: #eaf8ef;
+            font-size: 11px;
+            line-height: 1.55;
+        }
+
+        .login-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 22px;
+            color: #78847d;
+            font-size: 12px;
+        }
+
+        .login-row a {
+            color: #007d5c;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .login-row a:hover { text-decoration: underline; }
+
+        .footer {
+            min-height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 12px 5%;
+            color: #d6eee4;
+            background: #002f29;
+            font-size: 11px;
+        }
+
+        .footer strong { color: white; }
+
+        @media (max-width: 1050px) {
+            .main { grid-template-columns: 1fr; }
+            .hero { padding: 45px 7%; }
+            .hero-content { max-width: 750px; margin: auto; }
+            .dashboard-scene { max-width: 490px; }
+            .hero-bottom { text-align: center; }
+            .form-area { padding: 35px 5%; }
+            .register-card { max-width: 760px; }
+        }
+
+        @media (max-width: 600px) {
+            .topbar { padding: 12px 5%; }
+            .top-links { display: none; }
+            .brand { font-size: 16px; }
+            .secure-pill { font-size: 11px; padding: 8px 11px; }
+            .hero { padding: 34px 6%; }
+            .hero h1 { font-size: 39px; letter-spacing: -1.5px; }
+            .hero-copy { font-size: 14px; }
+            .features { gap: 15px 10px; }
+            .feature-icon { width: 40px; height: 40px; flex-basis: 40px; }
+            .feature strong { font-size: 12px; }
+            .feature small { font-size: 10px; }
+            .dashboard-scene { padding: 11px; }
+            .dash-body { grid-template-columns: 76px 1fr; }
+            .dash-side { font-size: 9px; }
+            .dash-stat strong { font-size: 11px; }
+            .qr-float { width: 65px; height: 70px; font-size: 29px; }
+            .form-area { padding: 22px 12px; }
+            .register-card { padding: 27px 19px 23px; border-radius: 20px; }
+            .form-grid { grid-template-columns: 1fr; gap: 16px; }
+            .field.full { grid-column: auto; }
+            .form-heading h2 { font-size: 27px; }
+            .footer { flex-direction: column; text-align: center; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *:before, *:after { transition: none !important; }
+        }
+    
+/* RESPONSIVE SCREEN-SIZE OPTIMIZATION */
+.main {
+    grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+    min-height: calc(100svh - 132px);
+}
+
+.hero {
+    padding: clamp(35px, 4vw, 65px) clamp(28px, 5vw, 80px);
+}
+
+.form-area {
+    padding: clamp(22px, 3vw, 45px);
+}
+
+.register-card {
+    width: 100%;
+    max-width: 820px;
+    padding: clamp(25px, 3vw, 44px);
+}
+
+.form-heading h2 {
+    font-size: clamp(28px, 2.5vw, 39px);
+}
+
+.field input {
+    height: 52px;
+    font-size: 14px;
+}
+
+.field label {
+    font-size: 14px;
+}
+
+.register-btn {
+    min-height: 56px;
+    font-size: 16px;
+}
+
+@media (min-width: 1400px) {
+    .main {
+        grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    }
+
+    .hero h1 {
+        font-size: clamp(48px, 3.7vw, 64px);
+    }
+
+    .hero-copy {
+        font-size: 18px;
+    }
+
+    .register-card {
+        max-width: 850px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .main {
+        grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+    }
+
+    .hero {
+        padding: 35px 28px;
+    }
+
+    .register-card {
+        padding: 28px 24px;
+    }
+
+    .features {
+        gap: 14px 10px;
+    }
+}
+
+@media (max-width: 1050px) {
+    .main {
+        grid-template-columns: 1fr;
+    }
+
+    .hero {
+        padding: 42px 6%;
+    }
+
+    .form-area {
+        padding: 35px 5%;
+    }
+
+    .register-card {
+        max-width: 760px;
+    }
+}
+
+@media (max-width: 600px) {
+    .main {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .hero {
+        padding: 32px 20px;
+    }
+
+    .form-area {
+        padding: 20px 12px;
+    }
+
+    .register-card {
+        padding: 25px 18px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .field.full {
+        grid-column: auto;
+    }
+}
+
+
+/* FINAL ADVANCED UI / UX OPTIMIZATION */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+.topbar {
+    min-height: 68px;
+    height: auto;
+    padding: 9px clamp(16px, 4vw, 65px);
+    gap: 15px;
+}
+
+.brand {
+    flex-shrink: 0;
+    font-size: 19px;
+}
+
+.top-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(5px, 1.2vw, 18px);
+}
+
+.nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 15px;
+    border-radius: 30px;
+    color: #164a3d;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 750;
+    white-space: nowrap;
+    transition: all .2s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: white;
+    background: linear-gradient(110deg,#007b58,#00aa79);
+    box-shadow: 0 5px 14px #00875e30;
+}
+
+.secure-pill {
+    white-space: nowrap;
+    padding: 10px 15px;
+}
+
+.main {
+    display: grid;
+    grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+    height: calc(100svh - 110px);
+    min-height: 570px;
+    overflow: hidden;
+}
+
+.hero {
+    min-width: 0;
+    padding: clamp(20px, 3vh, 38px) clamp(22px, 5vw, 72px);
+    justify-content: space-between;
+}
+
+.hero h1 {
+    margin: 17px 0 12px;
+    font-size: clamp(34px, 3.5vw, 53px);
+    line-height: 1.08;
+    letter-spacing: -1.7px;
+}
+
+.hero-copy {
+    max-width: 470px;
+    font-size: clamp(13px, 1.2vw, 16px);
+    line-height: 1.55;
+}
+
+.features {
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.feature {
+    gap: 10px;
+}
+
+.feature-icon {
+    width: 43px;
+    height: 43px;
+    flex-basis: 43px;
+    border-radius: 12px;
+    font-size: 20px;
+}
+
+.feature strong {
+    font-size: 12px;
+}
+
+.feature small {
+    font-size: 11px;
+}
+
+.dashboard-scene {
+    width: min(100%, 430px);
+    margin: 12px auto 8px;
+    padding: 11px;
+    transform: none;
+    border-radius: 15px;
+}
+
+.dash-top {
+    padding-bottom: 8px;
+    font-size: 10px;
+}
+
+.dash-body {
+    grid-template-columns: 85px 1fr;
+    gap: 8px;
+}
+
+.dash-side {
+    padding: 8px 6px;
+    font-size: 9px;
+    line-height: 2.6;
+}
+
+.dash-content {
+    padding: 8px;
+}
+
+.dash-stat {
+    padding: 6px 4px;
+    font-size: 8px;
+}
+
+.dash-stat strong {
+    font-size: 12px;
+}
+
+.chart {
+    height: 42px;
+    margin-top: 8px;
+    padding: 6px;
+}
+
+.qr-float {
+    width: 60px;
+    height: 65px;
+    font-size: 28px;
+    right: -7px;
+    bottom: -8px;
+}
+
+.hero-tagline {
+    font-size: clamp(17px, 1.8vw, 23px);
+}
+
+.form-area {
+    min-width: 0;
+    min-height: 0;
+    padding: 14px clamp(14px, 3vw, 38px);
+    overflow-y: auto;
+    align-items: center;
+}
+
+.register-card {
+    width: 100%;
+    max-width: 780px;
+    padding: clamp(17px, 2vh, 25px) clamp(18px, 2.3vw, 32px);
+    border-radius: 21px;
+}
+
+.form-heading {
+    margin-bottom: 15px;
+}
+
+.form-shield {
+    width: 49px;
+    height: 49px;
+    margin-bottom: 8px;
+    border-radius: 16px;
+    font-size: 25px;
+}
+
+.form-heading h2 {
+    font-size: clamp(25px, 2.4vw, 34px);
+}
+
+.form-heading p {
+    margin-top: 5px;
+    font-size: 13px;
+}
+
+.form-grid {
+    gap: 11px 16px;
+}
+
+.field label {
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+.field input {
+    height: 43px;
+    padding-left: 39px;
+    font-size: 12px;
+    border-radius: 9px;
+}
+
+.input-icon {
+    left: 13px;
+    font-size: 15px;
+}
+
+.toggle-password {
+    right: 9px;
+}
+
+.strength-row {
+    margin-top: 6px;
+}
+
+.hint {
+    margin-top: 5px;
+    font-size: 10px;
+}
+
+.terms {
+    margin: 12px 0;
+    font-size: 11px;
+}
+
+.register-btn {
+    min-height: 47px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.preview-note {
+    margin-top: 9px;
+    padding: 8px 11px;
+    font-size: 10px;
+}
+
+.login-row {
+    margin-top: 12px;
+    font-size: 11px;
+}
+
+.footer {
+    min-height: 42px;
+    padding: 8px clamp(16px, 4vw, 65px);
+}
+
+/* Short laptop screens */
+@media (max-height: 780px) and (min-width: 1051px) {
+    .main {
+        height: calc(100svh - 110px);
+        min-height: 0;
+    }
+
+    .hero {
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+
+    .hero h1 {
+        font-size: clamp(31px, 3.2vw, 43px);
+        margin: 12px 0 8px;
+    }
+
+    .hero-copy {
+        font-size: 13px;
+    }
+
+    .features {
+        margin-top: 13px;
+        gap: 9px;
+    }
+
+    .dashboard-scene {
+        margin-top: 7px;
+        margin-bottom: 4px;
+        padding: 8px;
+    }
+
+    .register-card {
+        padding-top: 13px;
+        padding-bottom: 13px;
+    }
+
+    .form-heading {
+        margin-bottom: 10px;
+    }
+
+    .form-shield {
+        width: 42px;
+        height: 42px;
+        margin-bottom: 5px;
+    }
+
+    .form-grid {
+        gap: 8px 13px;
+    }
+
+    .field input {
+        height: 39px;
+    }
+
+    .terms {
+        margin: 8px 0;
+    }
+
+    .register-btn {
+        min-height: 42px;
+    }
+
+    .preview-note {
+        margin-top: 7px;
+        padding: 6px 9px;
+    }
+
+    .login-row {
+        margin-top: 8px;
+    }
+}
+
+/* Tablet */
+@media (max-width: 1050px) {
+    .main {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .hero {
+        padding: 32px 6%;
+    }
+
+    .dashboard-scene {
+        max-width: 490px;
+    }
+
+    .form-area {
+        padding: 28px 5%;
+        overflow: visible;
+    }
+
+    .register-card {
+        max-width: 760px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .topbar {
+        min-height: 62px;
+        padding: 9px 12px;
+    }
+
+    .brand {
+        font-size: 15px;
+    }
+
+    .brand-icon {
+        width: 39px;
+        height: 39px;
+    }
+
+    .top-links {
+        display: none;
+    }
+
+    .secure-pill {
+        padding: 8px 10px;
+        font-size: 10px;
+    }
+
+    .hero {
+        padding: 28px 18px;
+    }
+
+    .hero h1 {
+        font-size: 37px;
+    }
+
+    .features {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .form-area {
+        padding: 17px 10px;
+    }
+
+    .register-card {
+        padding: 23px 16px;
+        border-radius: 17px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 13px;
+    }
+
+    .field.full {
+        grid-column: auto;
+    }
+
+    .footer {
+        flex-direction: column;
+        text-align: center;
+        gap: 5px;
+    }
+}
+
+
+/* ADVANCED_ADMIN_REGISTER_POLISH_V1 */
+html { scroll-behavior: smooth; }
+body {
+    overflow-x: hidden;
+    background: #f3f7f2;
+}
+.topbar {
+    position: sticky;
+    top: 0;
+    min-height: 72px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 5px 24px #003d340d;
+}
+.main {
+    height: auto;
+    min-height: calc(100svh - 126px);
+    overflow: visible;
+}
+.hero {
+    min-width: 0;
+    padding: clamp(32px, 4vw, 68px);
+}
+.form-area {
+    min-width: 0;
+    padding: clamp(20px, 3vw, 48px);
+}
+.register-card {
+    position: relative;
+    max-width: 790px;
+    border: 1px solid #e3ebe3;
+    border-radius: 24px;
+    background: #fffefa;
+    box-shadow: 0 24px 70px #123b2b18, 0 3px 12px #123b2b08;
+    transition: box-shadow .25s ease, transform .25s ease;
+}
+.register-card:hover {
+    box-shadow: 0 28px 80px #123b2b22;
+}
+.form-shield {
+    border: 1px solid #bcebd5;
+    box-shadow: 0 10px 28px #00875e20;
+}
+.field input {
+    min-height: 51px;
+    border: 1px solid #d9e4dc;
+    border-radius: 12px;
+    background: #fbfdf9;
+}
+.field input:hover { border-color: #9ccbb3; }
+.field input:focus {
+    border-color: #008c65;
+    box-shadow: 0 0 0 4px #008c6518;
+}
+.toggle-password {
+    border-radius: 8px;
+}
+.toggle-password:hover {
+    color: #007f5f;
+    background: #e9f7ef;
+}
+.register-btn {
+    min-height: 56px;
+    letter-spacing: .2px;
+    background: linear-gradient(110deg,#005d49,#008e68 58%,#00a879);
+}
+.register-btn:focus-visible,
+.toggle-password:focus-visible,
+.nav-link:focus-visible {
+    outline: 3px solid #36c995;
+    outline-offset: 3px;
+}
+.preview-note {
+    border-radius: 12px;
+}
+.login-row a { text-underline-offset: 4px; }
+.footer { flex-wrap: wrap; }
+
+@media (max-width: 1050px) {
+    .main {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 0;
+    }
+    .hero { padding: 42px 7%; }
+    .form-area { padding: 35px 5%; }
+}
+@media (max-width: 600px) {
+    .topbar { position: relative; }
+    .main { display: flex; }
+    .hero { padding: 32px 20px; }
+    .form-area { padding: 20px 12px; }
+    .register-card {
+        padding: 25px 18px;
+        border-radius: 18px;
+    }
+    .form-grid { grid-template-columns: 1fr; }
+    .field.full { grid-column: auto; }
+    .features { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
+}
+/* END ADVANCED ADMIN REGISTER POLISH */</style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        <div class="brand-icon">▦</div>
+        <div>Advance Billing<small>with QR</small></div>
+    </div>
+    <nav class="top-links" aria-label="Main navigation">
+    <a class="nav-link active" href="{% url 'admin_login' %}">⌂ &nbsp; Home</a>
+    <a class="nav-link" href="#security-note">◇ &nbsp; Secure</a>
+    <a class="nav-link" href="#billingPreview">ϟ &nbsp; Smart</a>
+    <a class="nav-link" href="#features">▥ &nbsp; Reliable</a>
+</nav>
+    <div class="secure-pill">♢ &nbsp; Secure Registration</div>
+</header>
+
+<main class="main">
+    <section class="hero">
+        <div class="hero-content">
+            <div class="eyebrow">♙ &nbsp; Administrator Registration</div>
+            <h1>Build a <span>Smarter</span> Billing Experience</h1>
+            <p class="hero-copy">
+                Create your administrator account to manage invoices,
+                customers and business operations efficiently.
+            </p>
+
+            <div class="features" id="features">
+                <div class="feature">
+                    <div class="feature-icon">♢</div>
+                    <div><strong>Secure & Reliable</strong><small>Your data is always safe</small></div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">▥</div>
+                    <div><strong>Smart Dashboard</strong><small>Track & manage easily</small></div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">▦</div>
+                    <div><strong>QR Enabled Billing</strong><small>Modern & fast payments</small></div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">↗</div>
+                    <div><strong>Business Insights</strong><small>Stay in control</small></div>
+                </div>
+            </div>
+
+            <div class="dashboard-scene" id="billingPreview">
+                <div class="dash-top"><span>▦ &nbsp; Advance Billing Dashboard</span><span>● &nbsp; ● &nbsp; ●</span></div>
+                <div class="dash-body">
+                    <div class="dash-side">
+                        <b>▣ Dashboard</b>
+                        Customers<br>Products<br>Invoices<br>Reports<br>Settings
+                    </div>
+                    <div class="dash-content">
+                        <div class="dash-stats">
+                            <div class="dash-stat">Total Invoices<strong>₹48,250</strong></div>
+                            <div class="dash-stat">Customers<strong>245</strong></div>
+                            <div class="dash-stat">Paid<strong>92%</strong></div>
+                        </div>
+                        <div style="font-size:10px;font-weight:700;margin-top:13px;">Business Overview</div>
+                        <div class="chart"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                    </div>
+                </div>
+                <div class="qr-float">▦</div>
+            </div>
+        </div>
+        <div class="hero-bottom">
+            <div class="hero-tagline">Manage · Automate · Grow</div>
+        </div>
+    </section>
+
+    <section class="form-area">
+        <div class="register-card">
+            <div class="form-heading">
+                <div class="form-shield">♙</div>
+                <h2>Create Admin Account</h2>
+                <p>Fill in the details below to get started</p>
+            </div>
+
+            <form id="adminRegisterForm" method="post" novalidate>
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="full_name">Full Name <span class="required">*</span></label>
+                        <div class="input-wrap">
+                            <span class="input-icon">♙</span>
+                            <input id="full_name" name="full_name" type="text" placeholder="Enter your full name" autocomplete="name" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="username">Username <span class="required">*</span></label>
+                        <div class="input-wrap">
+                            <span class="input-icon">♟</span>
+                            <input id="username" name="username" type="text" placeholder="Choose a username" autocomplete="username" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="email">Email Address <span class="required">*</span></label>
+                        <div class="input-wrap">
+                            <span class="input-icon">✉</span>
+                            <input id="email" name="email" type="email" placeholder="Enter your email address" autocomplete="email" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">Mobile Number</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">☎</span>
+                            <input id="phone" name="phone" type="tel" placeholder="Enter mobile number (optional)" autocomplete="tel">
+                        </div>
+                    </div>
+
+                    <div class="field full">
+                        <label for="password">Password <span class="required">*</span></label>
+                        <div class="input-wrap">
+                            <span class="input-icon">♙</span>
+                            <input id="password" name="password" type="password" placeholder="Create a strong password" autocomplete="new-password" required minlength="8">
+                            <button class="toggle-password" type="button" data-target="password" aria-label="Show password">◉</button>
+                        </div>
+                        <div class="strength-row">
+                            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+                            <span class="strength-label" id="strengthLabel">Password strength</span>
+                        </div>
+                        <div class="hint">Use at least 8 characters with uppercase, lowercase, numbers and symbols.</div>
+                    </div>
+
+                    <div class="field full">
+                        <label for="confirm_password">Confirm Password <span class="required">*</span></label>
+                        <div class="input-wrap">
+                            <span class="input-icon">♙</span>
+                            <input id="confirm_password" name="confirm_password" type="password" placeholder="Confirm your password" autocomplete="new-password" required>
+                            <button class="toggle-password" type="button" data-target="confirm_password" aria-label="Show confirm password">◉</button>
+                        </div>
+                    </div>
+                </div>
+
+                <label class="terms">
+                    <input type="checkbox" id="terms" required>
+                    <span>I agree to the <a href="#" onclick="return false;">Terms & Conditions</a> and <a href="#" onclick="return false;">Privacy Policy</a>.</span>
+                </label>
+
+                <button class="register-btn" type="submit">♙ &nbsp; Register Admin Account &nbsp; →</button>
+
+                <div class="preview-note" id="security-note">
+                    <span>ⓘ</span>
+                    <span>Frontend preview only. No admin account has been created. Secure account creation will be enabled separately.</span>
+                </div>
+
+                <div class="login-row">
+                    Already have an account?
+                    <a href="{% url 'admin_login' %}">Sign in here →</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div><strong>♢ &nbsp; Advance Billing System with QR</strong> &nbsp; | &nbsp; Secure. Smart. Reliable.</div>
+    <div>© 2026 All Rights Reserved</div>
+</footer>
+
+<script>
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirm_password");
+    const strengthFill = document.getElementById("strengthFill");
+    const strengthLabel = document.getElementById("strengthLabel");
+
+    document.querySelectorAll(".toggle-password").forEach(button => {
+        button.addEventListener("click", () => {
+            const input = document.getElementById(button.dataset.target);
+            const show = input.type === "password";
+            input.type = show ? "text" : "password";
+            button.setAttribute("aria-label", show ? "Hide password" : "Show password");
+            button.textContent = show ? "◎" : "◉";
+        });
+    });
+
+    password.addEventListener("input", () => {
+        const value = password.value;
+        let score = 0;
+        if (value.length >= 8) score++;
+        if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score++;
+        if (/[0-9]/.test(value)) score++;
+        if (/[^A-Za-z0-9]/.test(value)) score++;
+
+        const widths = ["0%", "25%", "50%", "75%", "100%"];
+        const labels = ["Password strength", "Weak", "Fair", "Good", "Strong"];
+        const colors = ["#e4e9e4", "#e35b5b", "#e5a13b", "#16a879", "#00845e"];
+
+        strengthFill.style.width = widths[score];
+        strengthFill.style.background = colors[score];
+        strengthLabel.textContent = labels[score];
+        strengthLabel.style.color = colors[score];
+    });
+
+    document.getElementById("adminRegisterForm").addEventListener("submit", event => {
+        event.preventDefault();
+
+        const form = event.currentTarget;
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity("Passwords do not match.");
+            confirmPassword.reportValidity();
+            confirmPassword.setCustomValidity("");
+            return;
+        }
+
+        alert("Frontend preview only. No admin account has been created.");
+    });
+
+    confirmPassword.addEventListener("input", () => {
+        confirmPassword.setCustomValidity("");
+    });
+</script>
+</body>
+</html>
+
+
