@@ -1,3 +1,8 @@
+from django.db import IntegrityError
+from django.views.decorators.http import require_POST
+from django.contrib.auth.password_validation import validate_password
+from django.http import JsonResponse
+import json
 from PIL import Image
 import random
 import re
@@ -45,6 +50,81 @@ from .models import (
 
 @never_cache
 @ensure_csrf_cookie
+def admin_register(request):
+    return render(
+        request,
+        "accounts/admin_register.html"
+    )
+
+
+
+@never_cache
+@require_POST
+def admin_register_api(request):
+    """Create a normal application Admin user account."""
+    if request.content_type == "application/json":
+        try:
+            data = json.loads(request.body or "{}")
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return JsonResponse({"success": False, "message": "Invalid JSON data."}, status=400)
+    else:
+        data = request.POST
+
+    full_name = str(data.get("full_name", "")).strip()
+    username = str(data.get("username", "")).strip()
+    email = str(data.get("email", "")).strip().lower()
+    password = str(data.get("password", ""))
+    confirm_password = str(data.get("confirm_password", ""))
+
+    if not all([full_name, username, email, password, confirm_password]):
+        return JsonResponse({"success": False, "message": "All required fields must be filled."}, status=400)
+
+    if password != confirm_password:
+        return JsonResponse({"success": False, "message": "Passwords do not match."}, status=400)
+
+    try:
+        validate_email(email)
+        User._meta.get_field("username").clean(username, None)
+        validate_password(password)
+    except ValidationError as error:
+        return JsonResponse({"success": False, "message": error.messages}, status=400)
+
+    if User.objects.filter(username__iexact=username).exists():
+        return JsonResponse({"success": False, "message": "Username already exists."}, status=400)
+
+    if User.objects.filter(email__iexact=email).exists():
+        return JsonResponse({"success": False, "message": "Email already registered."}, status=400)
+
+    name_parts = full_name.split()
+    first_name = name_parts[0]
+    last_name = " ".join(name_parts[1:])
+
+    try:
+        with transaction.atomic():
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                is_staff=False,
+                is_superuser=False,
+            )
+    except IntegrityError:
+        return JsonResponse({"success": False, "message": "Username or email already exists."}, status=400)
+
+    return JsonResponse({
+        "success": True,
+        "message": "Admin account registered successfully.",
+        "user": {
+            "id": user.id,
+            "full_name": user.get_full_name(),
+            "username": user.username,
+            "email": user.email,
+        },
+    }, status=201)
+
+
 def admin_login(request):
 
     if request.method == "POST":

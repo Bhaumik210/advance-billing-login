@@ -1344,6 +1344,9 @@ body {
                     <span>I agree to the <a href="#" onclick="return false;">Terms & Conditions</a> and <a href="#" onclick="return false;">Privacy Policy</a>.</span>
                 </label>
 
+                <div id="registerStatus" role="status" aria-live="polite"
+                     style="margin:12px 0;text-align:center;font-weight:600;"></div>
+
                 <button class="register-btn" type="submit">♙ &nbsp; Register Admin Account &nbsp; →</button>
 
                 <div class="preview-note" id="security-note">
@@ -1399,12 +1402,15 @@ body {
         strengthLabel.style.color = colors[score];
     });
 
-    document.getElementById("adminRegisterForm").addEventListener("submit", event => {
+    const adminForm = document.getElementById("adminRegisterForm");
+    const registerStatus = document.getElementById("registerStatus");
+    const registerButton = adminForm.querySelector('button[type="submit"]');
+
+    adminForm.addEventListener("submit", async event => {
         event.preventDefault();
 
-        const form = event.currentTarget;
-        if (!form.checkValidity()) {
-            form.reportValidity();
+        if (!adminForm.checkValidity()) {
+            adminForm.reportValidity();
             return;
         }
 
@@ -1415,7 +1421,57 @@ body {
             return;
         }
 
-        alert("Frontend preview only. No admin account has been created.");
+        const csrfToken = adminForm.querySelector(
+            '[name="csrfmiddlewaretoken"]'
+        ).value;
+
+        const payload = {
+            full_name: adminForm.elements["full_name"].value.trim(),
+            username: adminForm.elements["username"].value.trim(),
+            email: adminForm.elements["email"].value.trim(),
+            password: password.value,
+            confirm_password: confirmPassword.value
+        };
+
+        registerButton.disabled = true;
+        registerButton.textContent = "Creating account...";
+        registerStatus.textContent = "Please wait...";
+        registerStatus.style.color = "#555";
+
+        try {
+            const response = await fetch("/api/register/admin/", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                const message = Array.isArray(result.message)
+                    ? result.message.join(" ")
+                    : (result.message || "Registration failed.");
+                throw new Error(message);
+            }
+
+            registerStatus.textContent =
+                "Success! Admin account created. You can now log in.";
+            registerStatus.style.color = "#00845e";
+            adminForm.reset();
+            strengthFill.style.width = "0%";
+            strengthLabel.textContent = "Password strength";
+            registerButton.textContent = "Account Created";
+        } catch (error) {
+            registerStatus.textContent = error.message ||
+                "Unable to connect. Please try again.";
+            registerStatus.style.color = "#c0392b";
+            registerButton.disabled = false;
+            registerButton.textContent = "?  Register Admin Account  ?";
+        }
     });
 
     confirmPassword.addEventListener("input", () => {
