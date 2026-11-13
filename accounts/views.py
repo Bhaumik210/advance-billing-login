@@ -1,3 +1,4 @@
+import secrets
 from django.db import IntegrityError
 from django.views.decorators.http import require_POST
 from django.contrib.auth.password_validation import validate_password
@@ -34,6 +35,7 @@ from django.db import transaction
 from django.db.models.deletion import ProtectedError
 from django.db.models import Q
 
+from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
@@ -442,61 +444,66 @@ def distributor_register(request):
 
 
 def generate_otp(request):
-
     message = None
+    error = None
 
     if request.method == "POST":
+        email = request.POST.get("email", "").strip().lower()
 
-        email = request.POST.get(
-            "email",
-            ""
-        ).strip()
+        try:
+            validate_email(email)
+        except ValidationError:
+            error = "Please enter a valid email address."
+        else:
+            # Avoid revealing whether an account exists.
+            user = User.objects.filter(email__iexact=email).first()
 
-        if email:
+            if user:
+                OTPVerification.objects.filter(
+                    created_at__lt=timezone.now() - timedelta(minutes=5)
+                ).delete()
 
-            expiry_time = (
-                timezone.now()
-                - timedelta(minutes=5)
-            )
+                OTPVerification.objects.filter(email__iexact=email).delete()
 
-            OTPVerification.objects.filter(
-                created_at__lt=expiry_time
-            ).delete()
-
-            OTPVerification.objects.filter(
-                email=email
-            ).delete()
-
-            otp_code = str(
-                random.randint(
-                    100000,
-                    999999
+                otp_code = str(secrets.randbelow(900000) + 100000)
+                record = OTPVerification.objects.create(
+                    email=email,
+                    otp_code=otp_code
                 )
-            )
 
-            OTPVerification.objects.create(
-                email=email,
-                otp_code=otp_code
-            )
-
-            request.session[
-                "otp_email"
-            ] = email
-
-            print(
-                f"OTP for {email}: {otp_code}"
-            )
-
-            message = (
-                "OTP generated successfully."
-            )
+                try:
+                    send_mail(
+                        subject="Password Reset OTP - Advance Billing System",
+                        message=(
+                            f"Your password reset OTP is {otp_code}. "
+                            "It is valid for 5 minutes. "
+                            "If you did not request this, ignore this email."
+                        ),
+                        from_email=None,
+                        recipient_list=[email],
+                        fail_silently=False,
+                    )
+                except Exception:
+                    record.delete()
+                    error = "Unable to send OTP. Please try again later."
+                else:
+                    request.session["otp_email"] = email
+                    request.session.pop("otp_attempts", None)
+                    message = (
+                        "If an account exists with this email, "
+                        "a password reset OTP has been sent. "
+                        "Check your email or development terminal."
+                    )
+            else:
+                message = (
+                    "If an account exists with this email, "
+                    "a password reset OTP has been sent."
+                )
 
     return render(
         request,
         "accounts/otp_generate.html",
-        {
-            "message": message
-        }
+        {"message": message, "error": error}
     )
 
 
@@ -575,10 +582,72 @@ def verify_otp(request):
         }
     )
 def forgot_password(request):
+    message = None
+    error = None
+
+    if request.method == "POST":
+        email = request.POST.get("email", "").strip().lower()
+        otp_code = request.POST.get("otp", "").strip()
+        new_password = request.POST.get("new_password", "")
+        confirm_password = request.POST.get("confirm_password", "")
+
+        if not all([email, otp_code, new_password, confirm_password]):
+            error = "Please fill in all fields."
+        elif not re.fullmatch(r"[0-9]{6}", otp_code):
+            error = "Enter a valid 6-digit OTP."
+        elif new_password != confirm_password:
+            error = "Passwords do not match."
+        elif request.session.get("otp_email") != email:
+            error = "Please generate a new OTP for this email address."
+        else:
+            user = User.objects.filter(email__iexact=email).first()
+            otp_record = (
+                OTPVerification.objects
+                .filter(email__iexact=email)
+                .order_by("-created_at")
+                .first()
+            )
+
+            if user is None or otp_record is None:
+                error = "OTP not found. Please generate a new OTP."
+            elif otp_record.is_expired():
+                otp_record.delete()
+                request.session.pop("otp_email", None)
+                error = "OTP has expired. Please generate a new OTP."
+            elif otp_record.otp_code != otp_code:
+                attempts = request.session.get("otp_attempts", 0) + 1
+                request.session["otp_attempts"] = attempts
+
+                if attempts >= 5:
+                    otp_record.delete()
+                    request.session.pop("otp_email", None)
+                    request.session.pop("otp_attempts", None)
+                    error = "Too many incorrect attempts. Generate a new OTP."
+                else:
+                    error = f"Invalid OTP. Attempts remaining: {5 - attempts}."
+            else:
+                try:
+                    validate_password(new_password, user)
+                except ValidationError as exc:
+                    error = " ".join(exc.messages)
+                else:
+                    with transaction.atomic():
+                        user.set_password(new_password)
+                        user.save(update_fields=["password"])
+                        otp_record.delete()
+
+                    request.session.pop("otp_email", None)
+                    request.session.pop("otp_attempts", None)
+                    messages.success(
+                        request,
+                        "Password reset successfully. Please log in with your new password."
+                    )
+                    return redirect("distributor_login")
 
     return render(
         request,
-        "accounts/forgot_password.html"
+        "accounts/forgot_password.html",
+        {"error": error, "message": message}
     )
 
 
