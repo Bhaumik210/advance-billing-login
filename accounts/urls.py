@@ -14,6 +14,7 @@ urlpatterns = [
     path("forgot-password/", views.forgot_password, name="forgot_password"),
     path("distributor/profile/", views.distributor_profile, name="distributor_profile"),
     path("distributor/profile/edit/", views.edit_distributor_profile, name="edit_distributor_profile"),
+    path("api/customers/register/", views.customer_register_api, name="customer_register_api"),
     path("customers/", views.customer_list, name="customer_list"),
     path("customers/add/", views.add_customer, name="add_customer"),
     path("customers/<int:customer_id>/edit/", views.edit_customer, name="edit_customer"),

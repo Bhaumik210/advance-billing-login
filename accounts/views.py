@@ -957,6 +957,109 @@ def edit_distributor_profile(request):
         }
     )
 
+
+@require_POST
+def customer_register_api(request):
+    """Register a customer through the Distributor API."""
+
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "success": False,
+            "message": "Distributor login required."
+        }, status=401)
+
+    if not DistributorProfile.objects.filter(user=request.user).exists():
+        return JsonResponse({
+            "success": False,
+            "message": "Only registered distributors can add customers."
+        }, status=403)
+
+    if request.content_type == "application/json":
+        try:
+            data = json.loads(request.body or "{}")
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return JsonResponse({
+                "success": False,
+                "message": "Invalid JSON data."
+            }, status=400)
+
+        if not isinstance(data, dict):
+            return JsonResponse({
+                "success": False,
+                "message": "JSON data must be an object."
+            }, status=400)
+    else:
+        data = request.POST
+
+    name = str(data.get("name") or "").strip()
+    email = str(data.get("email") or "").strip().lower()
+    phone = str(data.get("phone") or "").strip()
+    address = str(data.get("address") or "").strip()
+
+    if not all([name, email, phone, address]):
+        return JsonResponse({
+            "success": False,
+            "message": "Name, email, phone and address are required."
+        }, status=400)
+
+    if len(name) < 2 or not re.fullmatch(r"[A-Za-z ]+", name):
+        return JsonResponse({
+            "success": False,
+            "message": "Enter a valid customer name using letters and spaces."
+        }, status=400)
+
+    try:
+        validate_email(email)
+    except ValidationError:
+        return JsonResponse({
+            "success": False,
+            "message": "Enter a valid email address."
+        }, status=400)
+
+    if not phone.isdigit() or len(phone) != 10:
+        return JsonResponse({
+            "success": False,
+            "message": "Phone number must contain exactly 10 digits."
+        }, status=400)
+
+    if len(address) < 5:
+        return JsonResponse({
+            "success": False,
+            "message": "Please enter a valid address."
+        }, status=400)
+
+    if Customer.objects.filter(email__iexact=email).exists():
+        return JsonResponse({
+            "success": False,
+            "message": "A customer with this email already exists."
+        }, status=409)
+
+    try:
+        customer = Customer.objects.create(
+            name=name,
+            email=email,
+            phone=phone,
+            address=address
+        )
+    except IntegrityError:
+        return JsonResponse({
+            "success": False,
+            "message": "A customer with this email already exists."
+        }, status=409)
+
+    return JsonResponse({
+        "success": True,
+        "message": "Customer registered successfully.",
+        "customer": {
+            "id": customer.id,
+            "name": customer.name,
+            "email": customer.email,
+            "phone": customer.phone,
+            "address": customer.address
+        }
+    }, status=201)
+
+
 def add_customer(request):
 
     error = None
