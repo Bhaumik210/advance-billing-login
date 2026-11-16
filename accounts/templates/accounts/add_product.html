@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -161,6 +161,175 @@
             }
         }
     </style>
+<style id="PREMIUM_EMERALD_ADD_PRODUCT">
+    :root {
+        --emerald: #047857;
+        --emerald-dark: #065f46;
+        --emerald-light: #ecfdf5;
+        --text: #17352a;
+        --muted: #718078;
+        --border: #e2ebe5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f5f9f6;
+        color: var(--text);
+    }
+
+    .navbar {
+        background: #fff;
+        padding: 20px 7%;
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 3px 15px rgba(16, 75, 48, .04);
+    }
+
+    .navbar h2 {
+        margin: 0;
+        font-size: 21px;
+        font-weight: 750;
+        color: var(--emerald-dark);
+        letter-spacing: -.4px;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 780px;
+        margin: 42px auto;
+    }
+
+    .page-header { margin-bottom: 24px; }
+
+    .page-header h1 {
+        margin: 0 0 8px;
+        font-size: 30px;
+        letter-spacing: -.7px;
+        color: #123b2b;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+    }
+
+    .card {
+        background: #fff;
+        padding: 34px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 10px 32px rgba(18, 59, 43, .06);
+    }
+
+    .form-group { margin-bottom: 21px; }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #304c3e;
+    }
+
+    input, textarea {
+        width: 100%;
+        padding: 13px 15px;
+        border: 1px solid #dce7e0;
+        border-radius: 9px;
+        background: #fff;
+        color: #20392d;
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    input::placeholder, textarea::placeholder { color: #a0aca5; }
+
+    input:focus, textarea:focus {
+        border-color: var(--emerald);
+        box-shadow: 0 0 0 3px rgba(4, 120, 87, .10);
+    }
+
+    textarea {
+        min-height: 115px;
+        resize: vertical;
+        line-height: 1.5;
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .error {
+        background: #fff1f0;
+        color: #b42318;
+        border: 1px solid #f5c8c5;
+        padding: 14px 16px;
+        border-radius: 9px;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    .success {
+        background: var(--emerald-light);
+        color: var(--emerald-dark);
+        border: 1px solid #b8e5ce;
+        padding: 14px 16px;
+        border-radius: 9px;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    .help-text {
+        margin-top: 7px;
+        font-size: 12px;
+        color: var(--muted);
+    }
+
+    .submit-btn {
+        width: 100%;
+        background: var(--emerald);
+        color: #fff;
+        border: none;
+        padding: 14px;
+        border-radius: 9px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .2s ease;
+    }
+
+    .submit-btn:hover {
+        background: var(--emerald-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 5px 14px rgba(4, 120, 87, .18);
+    }
+
+    .footer {
+        text-align: center;
+        margin-top: 24px;
+        color: #98a89e;
+        font-size: 12px;
+    }
+
+    @media (max-width: 650px) {
+        .row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .container { width: 94%; margin: 30px auto; }
+        .card { padding: 23px 19px; }
+        .page-header h1 { font-size: 25px; }
+        .navbar { padding: 17px 5%; }
+    }
+</style>
 </head>
 
 <body>

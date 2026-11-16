@@ -1,41 +1,45 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Products</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products | Advance Billing System</title>
     <style>
-
-        * {
-            box-sizing: border-box;
+        :root {
+            --green-950: #063b2d;
+            --green-900: #064e3b;
+            --green-800: #065f46;
+            --green-700: #047857;
+            --green-600: #059669;
+            --green-100: #d1fae5;
+            --green-50: #ecfdf5;
+            --ink: #18352a;
+            --muted: #718078;
+            --line: #e4eee8;
+            --surface: #ffffff;
+            --page: #f4f8f5;
+            --danger: #b42318;
+            --danger-bg: #fff1f0;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f7fb;
-            color: #1f2937;
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            background: var(--page);
+            color: var(--ink);
         }
 
-        /* =========================
-           HEADER / NAVBAR
-        ========================= */
+        a { -webkit-tap-highlight-color: transparent; }
 
         .navbar {
-            width: 100%;
-            background: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
-            box-shadow: 0 3px 14px rgba(15, 23, 42, 0.05);
-            padding: 14px 7%;
+            min-height: 92px;
+            padding: 13px max(5%, calc((100% - 1280px) / 2));
+            background: var(--surface);
+            border-bottom: 1px solid var(--line);
+            box-shadow: 0 4px 18px rgba(6, 78, 59, .05);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -45,17 +49,17 @@
         .brand {
             display: flex;
             align-items: center;
-            gap: 18px;
+            gap: 16px;
+            min-width: 0;
         }
 
         .logo-box {
-            width: 105px;
-            height: 90px;
-            padding: 7px;
-            background: #ffffff;
-            border: 2px solid #dbeafe;
-            border-radius: 16px;
-            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.15);
+            width: 76px;
+            height: 66px;
+            padding: 5px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -65,242 +69,281 @@
         .brand-logo {
             width: 100%;
             height: 100%;
-            display: block;
             object-fit: contain;
-        }
-
-        .brand-content {
-            display: flex;
-            flex-direction: column;
         }
 
         .brand-name {
             margin: 0;
-            font-size: 25px;
-            line-height: 1.2;
-            font-weight: 700;
-            color: #0f172a;
+            color: var(--green-900);
+            font-size: 21px;
+            line-height: 1.25;
+            font-weight: 750;
+            letter-spacing: -.35px;
         }
 
         .brand-tagline {
+            display: block;
             margin-top: 5px;
-            font-size: 13px;
-            color: #64748b;
+            color: var(--muted);
+            font-size: 12px;
         }
 
-        .add-btn {
+        .add-btn, .search-btn {
+            border: 0;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: #2563eb;
-            color: #ffffff;
+            gap: 8px;
+            background: var(--green-800);
+            color: #fff;
             text-decoration: none;
-            padding: 12px 19px;
+            padding: 12px 18px;
             border-radius: 9px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 650;
             white-space: nowrap;
-            transition: 0.2s;
+            cursor: pointer;
+            transition: background .18s ease, transform .18s ease, box-shadow .18s ease;
         }
 
-        .add-btn:hover {
-            background: #1d4ed8;
+        .add-btn:hover, .search-btn:hover {
+            background: var(--green-700);
             transform: translateY(-1px);
+            box-shadow: 0 5px 13px rgba(6, 95, 70, .16);
         }
-
-        /* =========================
-           MAIN CONTENT
-        ========================= */
 
         .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 45px auto;
+            width: min(1180px, 90%);
+            margin: 38px auto 48px;
         }
 
         .page-header {
-            margin-bottom: 25px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 23px;
+        }
+
+        .eyebrow {
+            color: var(--green-700);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 11px;
+            font-weight: 750;
+            margin-bottom: 8px;
         }
 
         .page-header h1 {
-            margin: 0 0 9px;
-            font-size: 30px;
-            color: #0f172a;
+            margin: 0 0 8px;
+            color: var(--green-950);
+            font-size: clamp(25px, 3vw, 32px);
+            letter-spacing: -.7px;
         }
 
         .page-header p {
             margin: 0;
-            color: #64748b;
-            font-size: 16px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
         }
 
-        /* =========================
-           SEARCH
-        ========================= */
-
         .search-box {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 23px;
-            box-shadow: 0 5px 20px rgba(15, 23, 42, 0.05);
+            background: var(--surface);
+            padding: 17px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            margin-bottom: 18px;
+            box-shadow: 0 5px 20px rgba(6, 78, 59, .045);
         }
 
         .search-form {
             display: flex;
+            align-items: center;
             gap: 10px;
         }
 
         .search-input {
             flex: 1;
+            min-width: 0;
             padding: 13px 15px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
+            border: 1px solid #d6e3db;
+            border-radius: 9px;
+            color: var(--ink);
+            background: #fcfefd;
             font-size: 14px;
             outline: none;
+            transition: border-color .18s, box-shadow .18s;
         }
 
         .search-input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+            border-color: var(--green-600);
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, .12);
         }
 
-        .search-btn {
-            background: #2563eb;
-            color: #ffffff;
-            border: none;
-            padding: 12px 22px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: 0.2s;
-        }
-
-        .search-btn:hover {
-            background: #1d4ed8;
-        }
+        .search-input::placeholder { color: #9aa9a0; }
 
         .clear-btn {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 12px 18px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
+            padding: 12px 17px;
+            border: 1px solid #d6e3db;
+            border-radius: 9px;
+            color: var(--green-800);
             text-decoration: none;
-            color: #374151;
             font-size: 14px;
-            font-weight: 600;
-            background: #ffffff;
+            font-weight: 650;
+            background: #fff;
+            transition: background .18s, border-color .18s;
         }
 
         .clear-btn:hover {
-            background: #f8fafc;
+            background: var(--green-50);
+            border-color: #a7d8c1;
         }
 
         .search-info {
-            margin-bottom: 15px;
-            color: #64748b;
-            font-size: 14px;
+            margin: 0 0 14px;
+            color: var(--muted);
+            font-size: 13px;
         }
 
-        /* =========================
-           PRODUCT TABLE
-        ========================= */
+        .search-info strong { color: var(--green-800); }
 
-        .card {
-            background: #ffffff;
-            border-radius: 12px;
-            overflow-x: auto;
-            box-shadow: 0 5px 20px rgba(15, 23, 42, 0.06);
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(6, 78, 59, .05);
         }
+
+        .table-scroll { width: 100%; overflow-x: auto; }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 850px;
         }
 
-        th,
-        td {
-            padding: 17px 16px;
+        th, td {
+            padding: 16px 17px;
             text-align: left;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #edf2ee;
+            vertical-align: middle;
         }
 
         th {
-            background: #f8fafc;
-            color: #334155;
-            font-size: 14px;
-            font-weight: 700;
+            background: #f2f8f4;
+            color: var(--green-900);
+            font-size: 11px;
+            font-weight: 750;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+            white-space: nowrap;
         }
 
         td {
-            color: #1f2937;
-            font-size: 14px;
+            color: #344b3f;
+            font-size: 13px;
+            line-height: 1.5;
         }
 
-        tbody tr:hover {
-            background: #fafcff;
-        }
+        tbody tr { transition: background .15s ease; }
+        tbody tr:hover { background: #f8fcf9; }
+        tbody tr:last-child td { border-bottom: 0; }
 
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .stock-low {
-            color: #dc2626;
+        .product-name {
+            color: var(--green-950);
             font-weight: 700;
         }
 
-        .stock-ok {
-            color: #059669;
-            font-weight: 700;
+        .category {
+            display: inline-block;
+            padding: 5px 9px;
+            background: #f0f7f2;
+            color: #38634e;
+            border: 1px solid #e1eee5;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 650;
         }
 
-        .empty {
-            padding: 40px;
-            text-align: center;
-            color: #64748b;
-        }
-
-        /* =========================
-           EDIT BUTTON
-        ========================= */
-
-        .action-cell {
+        .price {
+            color: var(--green-900);
+            font-weight: 750;
             white-space: nowrap;
         }
+
+        .stock-low, .stock-ok {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 750;
+        }
+
+        .stock-low { color: var(--danger); background: var(--danger-bg); }
+        .stock-ok { color: var(--green-800); background: var(--green-50); }
+
+        .description {
+            max-width: 230px;
+            color: #718078;
+        }
+
+        .action-cell { white-space: nowrap; }
 
         .edit-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 9px 16px;
-            background: #059669;
-            color: #ffffff;
+            padding: 8px 14px;
+            background: var(--green-50);
+            color: var(--green-800);
+            border: 1px solid #bce7d0;
             text-decoration: none;
             border-radius: 7px;
-            font-size: 13px;
-            font-weight: 600;
-            transition: 0.2s;
+            font-size: 12px;
+            font-weight: 750;
+            transition: .18s ease;
         }
 
         .edit-btn:hover {
-            background: #047857;
-            transform: translateY(-1px);
+            background: var(--green-800);
+            border-color: var(--green-800);
+            color: #fff;
         }
 
-        /* =========================
-           PAGINATION
-        ========================= */
+        .empty {
+            padding: 58px 20px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .empty-icon {
+            width: 54px;
+            height: 54px;
+            margin: 0 auto 14px;
+            display: grid;
+            place-items: center;
+            border-radius: 16px;
+            background: var(--green-50);
+            color: var(--green-800);
+            font-size: 25px;
+        }
+
+        .empty strong { color: var(--green-900); }
 
         .pagination {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
-            margin-top: 26px;
+            gap: 7px;
+            margin-top: 23px;
             flex-wrap: wrap;
         }
 
@@ -308,428 +351,520 @@
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            min-width: 42px;
-            height: 42px;
-            padding: 0 13px;
-            background: #ffffff;
-            color: #374151;
-            border: 1px solid #d1d5db;
+            min-width: 39px;
+            height: 39px;
+            padding: 0 12px;
+            background: #fff;
+            color: #456052;
+            border: 1px solid #dce9e0;
             border-radius: 8px;
             text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: 700;
+            transition: .18s ease;
         }
 
         .page-link:hover {
-            background: #f8fafc;
-            border-color: #93c5fd;
+            color: var(--green-800);
+            border-color: #8bc9a9;
+            background: var(--green-50);
         }
 
         .page-current {
-            background: #2563eb;
-            color: #ffffff;
-            border-color: #2563eb;
+            background: var(--green-800);
+            color: #fff;
+            border-color: var(--green-800);
+        }
+
+        .page-current:hover {
+            background: var(--green-800);
+            color: #fff;
+            border-color: var(--green-800);
         }
 
         .page-info {
-            margin-top: 13px;
+            margin-top: 11px;
             text-align: center;
-            color: #64748b;
-            font-size: 13px;
-        }
-
-        /* =========================
-           FOOTER
-        ========================= */
-
-        .footer {
-            margin-top: 30px;
-            text-align: center;
-            color: #94a3b8;
+            color: #829087;
             font-size: 12px;
         }
 
-        /* =========================
-           MOBILE RESPONSIVE
-        ========================= */
+        .footer {
+            margin-top: 35px;
+            text-align: center;
+            color: #91a097;
+            font-size: 11px;
+        }
 
         @media (max-width: 750px) {
-
-            .navbar {
-                padding: 12px 20px;
-            }
-
-            .brand {
-                gap: 10px;
-            }
-
-            .logo-box {
-                width: 75px;
-                height: 68px;
-                border-radius: 12px;
-            }
-
-            .brand-name {
-                font-size: 18px;
-            }
-
-            .brand-tagline {
-                display: none;
-            }
-
-            .add-btn {
-                padding: 10px 13px;
-                font-size: 12px;
-            }
-
-            .container {
-                width: 94%;
-                margin-top: 30px;
-            }
-
-            .search-form {
-                flex-direction: column;
-            }
-
-            th,
-            td {
-                white-space: nowrap;
-            }
-
+            .navbar { padding: 12px 4%; }
+            .brand { gap: 10px; }
+            .logo-box { width: 61px; height: 56px; }
+            .brand-name { font-size: 16px; }
+            .brand-tagline { display: none; }
+            .add-btn { padding: 10px 12px; font-size: 12px; }
+            .container { width: 94%; margin-top: 27px; }
+            .page-header { align-items: flex-start; }
+            .search-form { flex-wrap: wrap; }
+            .search-input { flex-basis: 100%; }
+            .search-btn, .clear-btn { flex: 1; }
         }
 
-        @media (max-width: 480px) {
-
-            .brand-name {
-                display: none;
-            }
-
-            .logo-box {
-                width: 70px;
-                height: 65px;
-            }
-
+        @media (max-width: 430px) {
+            .brand-name { font-size: 14px; }
+            .logo-box { width: 49px; height: 47px; }
+            .navbar { gap: 9px; }
+            .add-btn { padding: 9px 10px; font-size: 11px; }
+            .page-header h1 { font-size: 25px; }
+            .search-box { padding: 13px; }
         }
-
     </style>
+<style id="PREMIUM_EMERALD_PRODUCT_LIST_V2">
+    body {
+        background: #f0f5f1 !important;
+        color: #173d2c;
+        font-family: "Segoe UI", Arial, sans-serif !important;
+    }
 
+    .navbar {
+        min-height: 86px;
+        padding-left: max(5%, calc((100% - 1280px) / 2));
+        padding-right: max(5%, calc((100% - 1280px) / 2));
+        background: linear-gradient(110deg, #063b2d, #08754b) !important;
+        border-bottom: 0 !important;
+        box-shadow: 0 7px 25px rgba(6, 59, 45, .15) !important;
+    }
+
+    .logo-box {
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 13px;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    }
+
+    .brand-name {
+        color: #fff !important;
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .brand-tagline {
+        color: #d0eadd !important;
+    }
+
+    .add-btn {
+        background: #fff !important;
+        color: #08613d !important;
+        border: 1px solid rgba(255,255,255,.4);
+        border-radius: 10px;
+        padding: 13px 19px;
+        box-shadow: 0 4px 14px rgba(0,0,0,.10);
+    }
+
+    .add-btn:hover {
+        background: #e9f8ef !important;
+        color: #064e35 !important;
+    }
+
+    .container {
+        width: min(1220px, 91%);
+        margin-top: 43px;
+        margin-bottom: 55px;
+    }
+
+    .page-header {
+        margin-bottom: 27px;
+    }
+
+    .eyebrow {
+        color: #07834d !important;
+        font-size: 11px;
+        letter-spacing: 2px;
+        font-weight: 800;
+    }
+
+    .page-header h1 {
+        color: #073d2b !important;
+        font-size: clamp(29px, 3vw, 36px);
+        font-weight: 800;
+        letter-spacing: -1px;
+    }
+
+    .page-header p {
+        color: #77877c !important;
+        font-size: 14px;
+    }
+
+    .search-box {
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px solid #e1ebe4;
+        background: #fff;
+        box-shadow: 0 8px 25px rgba(6,78,59,.055);
+        margin-bottom: 22px;
+    }
+
+    .search-form {
+        gap: 12px;
+    }
+
+    .search-input {
+        min-height: 49px;
+        border: 1px solid #dce8df;
+        border-radius: 10px;
+        background: #fbfdfb;
+        padding: 13px 17px;
+        font-size: 14px;
+        color: #18352a;
+    }
+
+    .search-input:focus {
+        border-color: #07834d;
+        box-shadow: 0 0 0 4px rgba(8,131,77,.10);
+    }
+
+    .search-btn {
+        min-height: 49px;
+        padding: 12px 22px;
+        border-radius: 10px;
+        background: linear-gradient(110deg, #087344, #09975a);
+        box-shadow: 0 5px 14px rgba(8,115,68,.16);
+    }
+
+    .search-btn:hover {
+        background: #065b37;
+    }
+
+    .clear-btn {
+        min-height: 49px;
+        border-radius: 10px;
+        border-color: #dce8df;
+        color: #087344;
+        padding: 12px 18px;
+    }
+
+    .search-info {
+        margin: 0 0 15px;
+        padding: 12px 16px;
+        background: #e8f6ed;
+        border: 1px solid #d2eadb;
+        border-radius: 10px;
+        color: #557363;
+    }
+
+    .search-info strong {
+        color: #07613d;
+    }
+
+    .table-card {
+        border: 1px solid #e1ebe4;
+        border-radius: 17px;
+        box-shadow: 0 9px 30px rgba(6,78,59,.06);
+        background: #fff;
+    }
+
+    table {
+        min-width: 900px;
+    }
+
+    th {
+        background: #eaf4ed;
+        color: #14583a;
+        padding: 18px 17px;
+        font-size: 11px;
+        letter-spacing: .9px;
+    }
+
+    td {
+        padding: 17px;
+        color: #455b4d;
+        font-size: 13px;
+        border-bottom: 1px solid #edf3ee;
+    }
+
+    tbody tr {
+        transition: background .18s ease;
+    }
+
+    tbody tr:hover {
+        background: #f4faf6;
+    }
+
+    .product-name {
+        color: #123e2b;
+        font-weight: 750;
+    }
+
+    .category {
+        background: #edf7f0;
+        border: 1px solid #dceee1;
+        color: #28724b;
+        padding: 6px 11px;
+        font-size: 11px;
+    }
+
+    .price {
+        color: #087344;
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .stock-low {
+        color: #b42318;
+        background: #fff0ed;
+        border: 1px solid #ffd8d1;
+        padding: 6px 11px;
+    }
+
+    .stock-ok {
+        color: #087344;
+        background: #eaf7ee;
+        border: 1px solid #d2eadb;
+        padding: 6px 11px;
+    }
+
+    .description {
+        color: #75857a;
+        line-height: 1.6;
+    }
+
+    .edit-btn {
+        padding: 9px 16px;
+        background: #eaf7ee;
+        color: #087344;
+        border: 1px solid #cce8d5;
+        border-radius: 8px;
+        font-weight: 750;
+    }
+
+    .edit-btn:hover {
+        background: #087344;
+        border-color: #087344;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(8,115,68,.17);
+    }
+
+    .empty {
+        padding: 70px 20px;
+        color: #7c8a80;
+    }
+
+    .empty-icon {
+        width: 65px;
+        height: 65px;
+        background: #eaf7ee;
+        border-radius: 19px;
+        color: #087344;
+        font-size: 29px;
+    }
+
+    .empty strong {
+        color: #087344;
+    }
+
+    .pagination {
+        gap: 8px;
+        margin-top: 27px;
+    }
+
+    .page-link {
+        min-width: 41px;
+        height: 41px;
+        border: 1px solid #dce9e0;
+        border-radius: 9px;
+        color: #38634e;
+        font-size: 12px;
+    }
+
+    .page-link:hover {
+        background: #eaf7ee;
+        border-color: #a8d7ba;
+        color: #087344;
+    }
+
+    .page-current,
+    .page-current:hover {
+        background: #087344;
+        border-color: #087344;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(8,115,68,.18);
+    }
+
+    .page-info {
+        color: #7b8a80;
+    }
+
+    .footer {
+        color: #89988e;
+        padding-top: 12px;
+    }
+
+    @media (max-width: 750px) {
+        .navbar {
+            padding: 12px 4%;
+        }
+
+        .container {
+            width: 94%;
+            margin-top: 29px;
+        }
+
+        .search-box {
+            padding: 15px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+        }
+    }
+
+    @media (max-width: 430px) {
+        .brand-name {
+            font-size: 13px;
+        }
+
+        .add-btn {
+            padding: 9px 10px;
+            font-size: 11px;
+        }
+
+        .search-btn,
+        .clear-btn {
+            min-height: 44px;
+        }
+    }
+</style>
 </head>
-
 <body>
-
-    <!-- NAVBAR -->
-
-    <div class="navbar">
-
+    <header class="navbar">
         <div class="brand">
-
             <div class="logo-box">
-
                 <img
                     src="{% static 'accounts/images/logo.png' %}"
                     alt="Advance Billing System with QR Logo"
                     class="brand-logo"
                 >
-
             </div>
-
             <div class="brand-content">
-
-                <h2 class="brand-name">
-                    Advance Billing System
-                </h2>
-
-                <span class="brand-tagline">
-                    Smart Billing & QR Management
-                </span>
-
+                <h2 class="brand-name">Advance Billing System</h2>
+                <span class="brand-tagline">Smart Billing &amp; QR Management</span>
             </div>
-
         </div>
+        <a href="{% url 'add_product' %}" class="add-btn">＋ Add Product</a>
+    </header>
 
-        <a
-            href="{% url 'add_product' %}"
-            class="add-btn"
-        >
-            Add Product
-        </a>
+    <main class="container">
+        <section class="page-header">
+            <div>
+                <div class="eyebrow">Inventory management</div>
+                <h1>Products</h1>
+                <p>View, search and manage your product records.</p>
+            </div>
+        </section>
 
-    </div>
-
-    <!-- MAIN CONTENT -->
-
-    <div class="container">
-
-        <div class="page-header">
-
-            <h1>
-                Products
-            </h1>
-
-            <p>
-                View, search and manage product records.
-            </p>
-
-        </div>
-
-        <!-- SEARCH -->
-
-        <div class="search-box">
-
-            <form
-                method="GET"
-                action="{% url 'product_list' %}"
-                class="search-form"
-            >
-
+        <section class="search-box">
+            <form method="GET" action="{% url 'product_list' %}" class="search-form">
                 <input
                     type="text"
                     name="search"
                     class="search-input"
                     value="{{ search_query }}"
                     placeholder="Search by product name, category or description"
+                    aria-label="Search products"
                 >
-
-                <button
-                    type="submit"
-                    class="search-btn"
-                >
-                    Search
-                </button>
-
+                <button type="submit" class="search-btn">⌕ Search</button>
                 {% if search_query %}
-
-                    <a
-                        href="{% url 'product_list' %}"
-                        class="clear-btn"
-                    >
-                        Clear
-                    </a>
-
+                    <a href="{% url 'product_list' %}" class="clear-btn">Clear search</a>
                 {% endif %}
-
             </form>
-
-        </div>
-
-        <!-- SEARCH INFORMATION -->
+        </section>
 
         {% if search_query %}
-
             <div class="search-info">
-
-                Search results for:
-
-                <strong>
-                    {{ search_query }}
-                </strong>
-
+                Search results for: <strong>{{ search_query }}</strong>
             </div>
-
         {% endif %}
 
-        <!-- PRODUCT TABLE -->
-
-        <div class="card">
-
+        <section class="table-card">
             {% if page_obj.object_list %}
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>Name</th>
-
-                            <th>Category</th>
-
-                            <th>Price</th>
-
-                            <th>Stock</th>
-
-                            <th>GST Rate</th>
-
-                            <th>Description</th>
-
-                            <th>Action</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        {% for product in page_obj %}
-
+                <div class="table-scroll">
+                    <table>
+                        <thead>
                             <tr>
-
-                                <td>
-                                    {{ product.name }}
-                                </td>
-
-                                <td>
-                                    {{ product.category }}
-                                </td>
-
-                                <td>
-                                    ₹{{ product.price }}
-                                </td>
-
-                                <td>
-
-                                    {% if product.stock <= 5 %}
-
-                                        <span class="stock-low">
-                                            {{ product.stock }}
-                                        </span>
-
-                                    {% else %}
-
-                                        <span class="stock-ok">
-                                            {{ product.stock }}
-                                        </span>
-
-                                    {% endif %}
-
-                                </td>
-
-                                <td>
-                                    {{ product.gst_rate }}%
-                                </td>
-
-                                <td>
-                                    {{ product.description|default:"-" }}
-                                </td>
-
-                                <td class="action-cell">
-
-                                    <a
-                                        href="{% url 'edit_product' product.id %}"
-                                        class="edit-btn"
-                                    >
-                                        Edit
-                                    </a>
-
-                                </td>
-
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>GST Rate</th>
+                                <th>Description</th>
+                                <th>Action</th>
                             </tr>
-
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            {% else %}
-
-                <div class="empty">
-
-                    {% if search_query %}
-
-                        No products found for
-                        "<strong>{{ search_query }}</strong>".
-
-                    {% else %}
-
-                        No products found.
-
-                    {% endif %}
-
+                        </thead>
+                        <tbody>
+                            {% for product in page_obj %}
+                                <tr>
+                                    <td class="product-name">{{ product.name }}</td>
+                                    <td><span class="category">{{ product.category }}</span></td>
+                                    <td class="price">₹{{ product.price }}</td>
+                                    <td>
+                                        {% if product.stock <= 5 %}
+                                            <span class="stock-low">{{ product.stock }}</span>
+                                        {% else %}
+                                            <span class="stock-ok">{{ product.stock }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ product.gst_rate }}%</td>
+                                    <td class="description">{{ product.description|default:"-" }}</td>
+                                    <td class="action-cell">
+                                        <a href="{% url 'edit_product' product.id %}" class="edit-btn">Edit</a>
+<form method="POST" action="{% url 'delete_product' product.id %}" style="display:inline; margin-left:5px;" onsubmit="return confirm('Are you sure you want to delete this product?');">
+    {% csrf_token %}
+    <button type="submit" class="delete-btn" style="padding:9px 16px; background:#fff0f0; color:#c62828; border:1px solid #f2c4c4; border-radius:8px; font-weight:750; cursor:pointer;">Delete</button>
+</form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-
+            {% else %}
+                <div class="empty">
+                    <div class="empty-icon">▦</div>
+                    {% if search_query %}
+                        No products found for "<strong>{{ search_query }}</strong>".
+                    {% else %}
+                        No products found.
+                    {% endif %}
+                </div>
             {% endif %}
-
-        </div>
-
-        <!-- PAGINATION -->
+        </section>
 
         {% if page_obj.paginator.num_pages > 1 %}
-
-            <div class="pagination">
-
+            <nav class="pagination" aria-label="Product pagination">
                 {% if page_obj.has_previous %}
-
-                    <a
-                        href="?search={{ search_query|urlencode }}&amp;page=1"
-                        class="page-link"
-                    >
-                        First
-                    </a>
-
-                    <a
-                        href="?search={{ search_query|urlencode }}&amp;page={{ page_obj.previous_page_number }}"
-                        class="page-link"
-                    >
-                        Previous
-                    </a>
-
+                    <a href="?search={{ search_query|urlencode }}&amp;page=1" class="page-link">First</a>
+                    <a href="?search={{ search_query|urlencode }}&amp;page={{ page_obj.previous_page_number }}" class="page-link">Previous</a>
                 {% endif %}
 
                 {% for page_number in page_obj.paginator.page_range %}
-
                     {% if page_number == page_obj.number %}
-
-                        <span class="page-link page-current">
-                            {{ page_number }}
-                        </span>
-
+                        <span class="page-link page-current" aria-current="page">{{ page_number }}</span>
                     {% else %}
-
-                        <a
-                            href="?search={{ search_query|urlencode }}&amp;page={{ page_number }}"
-                            class="page-link"
-                        >
-                            {{ page_number }}
-                        </a>
-
+                        <a href="?search={{ search_query|urlencode }}&amp;page={{ page_number }}" class="page-link">{{ page_number }}</a>
                     {% endif %}
-
                 {% endfor %}
 
                 {% if page_obj.has_next %}
-
-                    <a
-                        href="?search={{ search_query|urlencode }}&amp;page={{ page_obj.next_page_number }}"
-                        class="page-link"
-                    >
-                        Next
-                    </a>
-
-                    <a
-                        href="?search={{ search_query|urlencode }}&amp;page={{ page_obj.paginator.num_pages }}"
-                        class="page-link"
-                    >
-                        Last
-                    </a>
-
+                    <a href="?search={{ search_query|urlencode }}&amp;page={{ page_obj.next_page_number }}" class="page-link">Next</a>
+                    <a href="?search={{ search_query|urlencode }}&amp;page={{ page_obj.paginator.num_pages }}" class="page-link">Last</a>
                 {% endif %}
-
-            </div>
-
+            </nav>
             <div class="page-info">
-
-                Page
-                {{ page_obj.number }}
-
-                of
-
-                {{ page_obj.paginator.num_pages }}
-
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
             </div>
-
         {% endif %}
 
-        <!-- FOOTER -->
-
-        <div class="footer">
-
-            Advance Billing System with QR
-
-        </div>
-
-    </div>
-
+        <footer class="footer">Advance Billing System with QR</footer>
+    </main>
 </body>
-
 </html>
