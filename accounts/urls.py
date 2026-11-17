@@ -27,4 +27,5 @@ urlpatterns = [
     path("invoices/", views.invoice_list, name="invoice_list"),
     path("invoices/<int:invoice_id>/pdf/", views.download_invoice_pdf, name="download_invoice_pdf"),
     path("dashboard/", views.dashboard, name="dashboard"),
+    path("reports/", views.admin_reports, name="admin_reports"),
 ]

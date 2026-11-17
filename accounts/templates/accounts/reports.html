@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Reports | Advance Billing</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f8f6;color:#24352d}
+header{background:#087f5b;color:white;padding:22px 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+header h2{margin:0}
+a{color:inherit;text-decoration:none}
+.container{max-width:1200px;margin:30px auto;padding:0 18px}
+.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;margin-bottom:22px}
+.btn{display:inline-block;background:#087f5b;color:white;padding:11px 17px;border:0;border-radius:7px;cursor:pointer;font-weight:bold}
+.btn:hover{background:#066747}
+.btn-light{background:#e4f3ec;color:#087f5b}
+.filters,.card,.panel{background:white;border-radius:12px;padding:20px;box-shadow:0 3px 14px #153c2b0d;margin-bottom:20px}
+.filters form{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:7px}
+input{padding:10px;border:1px solid #d5e1da;border-radius:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin:20px 0}
+.card small{color:#718078}
+.card h2{margin:12px 0 4px;color:#087f5b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{text-align:left;padding:13px;border-bottom:1px solid #e8eee9}
+th{background:#eff7f2;color:#315b47}
+.table-wrap{overflow-x:auto}
+.status{display:inline-block;padding:5px 9px;border-radius:20px;background:#e8f5ed;font-size:12px}
+.error{background:#fff0ef;color:#b42318;padding:12px;border-radius:7px;margin-bottom:15px}
+footer{text-align:center;padding:25px;color:#78857e}
+@media(max-width:600px){header{padding:18px}.filters form{display:block}.field{margin-bottom:12px}.filters .btn{margin:5px 4px 0 0}}
+</style>
+</head>
+<body>
+<header>
+<h2>Advance Billing System</h2>
+<a href="{% url 'dashboard' %}">← Back to Dashboard</a>
+</header>
+
+<main class="container">
+<div class="top">
+<div>
+<h1>Admin Reports</h1>
+<p>Business performance and billing overview</p>
+</div>
+<a class="btn" href="?start_date={{ start_date }}&end_date={{ end_date }}&export=csv">Download CSV</a>
+</div>
+
+<section class="filters">
+<h3>Filter Reports by Date</h3>
+{% if date_error %}<div class="error">{{ date_error }}</div>{% endif %}
+<form method="get">
+<div class="field">
+<label for="start_date">Start Date</label>
+<input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+</div>
+<div class="field">
+<label for="end_date">End Date</label>
+<input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+</div>
+<button class="btn" type="submit">Apply Filter</button>
+<a class="btn btn-light" href="{% url 'admin_reports' %}">Reset</a>
+</form>
+</section>
+
+<div class="cards">
+<div class="card"><small>Total Sales</small><h2>₹{{ total_sales|floatformat:2 }}</h2></div>
+<div class="card"><small>Paid Amount</small><h2>₹{{ paid_amount|floatformat:2 }}</h2></div>
+<div class="card"><small>Pending Amount</small><h2>₹{{ pending_amount|floatformat:2 }}</h2></div>
+<div class="card"><small>Total GST</small><h2>₹{{ gst_total|floatformat:2 }}</h2></div>
+</div>
+
+<section class="grid">
+<div class="card"><small>Total Invoices</small><h2>{{ total_invoices }}</h2></div>
+<div class="card"><small>Total Customers</small><h2>{{ total_customers }}</h2></div>
+<div class="card"><small>Total Products</small><h2>{{ total_products }}</h2></div>
+<div class="card"><small>Low Stock Products (5 or less)</small><h2>{{ low_stock_products }}</h2></div>
+</section>
+
+<section class="panel">
+<h2>Invoice Status Summary</h2>
+<div class="grid">
+<div><small>Paid</small><h2>{{ status_counts.PAID }}</h2></div>
+<div><small>Unpaid</small><h2>{{ status_counts.UNPAID }}</h2></div>
+<div><small>Draft</small><h2>{{ status_counts.DRAFT }}</h2></div>
+<div><small>Cancelled</small><h2>{{ status_counts.CANCELLED }}</h2></div>
+</div>
+</section>
+
+<section class="panel">
+<h2>Daily Sales Report</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Date</th><th>Invoices</th><th>Total Sales</th></tr></thead>
+<tbody>
+{% for item in daily_sales %}
+<tr>
+<td>{{ item.invoice_date|date:"d M Y" }}</td>
+<td>{{ item.invoice_count }}</td>
+<td>₹{{ item.total|floatformat:2 }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="3">No sales records found.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="panel">
+<h2>Recent Invoices</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Invoice Number</th><th>Customer</th><th>Date</th><th>Status</th><th>Amount</th></tr></thead>
+<tbody>
+{% for invoice in recent_invoices %}
+<tr>
+<td>{{ invoice.invoice_number }}</td>
+<td>{{ invoice.customer.name }}</td>
+<td>{{ invoice.invoice_date|date:"d M Y" }}</td>
+<td><span class="status">{{ invoice.get_status_display }}</span></td>
+<td>₹{{ invoice.grand_total|floatformat:2 }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="5">No invoices found.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</section>
+</main>
+<footer>Advance Billing System with QR</footer>
+</body>
+</html>

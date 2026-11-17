@@ -3068,3 +3068,108 @@ def download_invoice_pdf(request, invoice_id):
 
     buffer.close()
     return response
+
+@login_required(login_url="admin_login")
+def admin_reports(request):
+    """Admin-only business reports with date filtering and CSV export."""
+    import csv
+    from datetime import date
+    from decimal import Decimal
+    from django.db.models import Sum, Count
+    from django.http import HttpResponse, HttpResponseForbidden
+
+    if not request.user.is_staff:
+        return HttpResponseForbidden("You are not authorized to access reports.")
+
+    invoices = Invoice.objects.select_related("customer").all().order_by("-invoice_date")
+
+    start_date = request.GET.get("start_date", "").strip()
+    end_date = request.GET.get("end_date", "").strip()
+    parsed_start = None
+    parsed_end = None
+    date_error = ""
+
+    try:
+        if start_date:
+            parsed_start = date.fromisoformat(start_date)
+        if end_date:
+            parsed_end = date.fromisoformat(end_date)
+        if parsed_start and parsed_end and parsed_start > parsed_end:
+            date_error = "Start date cannot be later than end date."
+    except ValueError:
+        date_error = "Please enter valid dates."
+
+    if not date_error:
+        if parsed_start:
+            invoices = invoices.filter(invoice_date__gte=parsed_start)
+        if parsed_end:
+            invoices = invoices.filter(invoice_date__lte=parsed_end)
+
+    if request.GET.get("export") == "csv" and not date_error:
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="billing_reports.csv"'
+        writer = csv.writer(response)
+        writer.writerow([
+            "Invoice Number", "Customer", "Date",
+            "Status", "Subtotal", "GST", "Grand Total"
+        ])
+        for invoice in invoices:
+            writer.writerow([
+                invoice.invoice_number,
+                invoice.customer.name,
+                invoice.invoice_date,
+                invoice.status,
+                invoice.subtotal,
+                invoice.gst_amount,
+                invoice.grand_total,
+            ])
+        return response
+
+    active_invoices = invoices.exclude(status__in=["DRAFT", "CANCELLED"])
+
+    total_sales = active_invoices.aggregate(
+        total=Sum("grand_total")
+    )["total"] or Decimal("0.00")
+
+    paid_amount = invoices.filter(status="PAID").aggregate(
+        total=Sum("grand_total")
+    )["total"] or Decimal("0.00")
+
+    pending_amount = invoices.filter(status="UNPAID").aggregate(
+        total=Sum("grand_total")
+    )["total"] or Decimal("0.00")
+
+    gst_total = active_invoices.aggregate(
+        total=Sum("gst_amount")
+    )["total"] or Decimal("0.00")
+
+    status_counts = {
+        "PAID": invoices.filter(status="PAID").count(),
+        "UNPAID": invoices.filter(status="UNPAID").count(),
+        "DRAFT": invoices.filter(status="DRAFT").count(),
+        "CANCELLED": invoices.filter(status="CANCELLED").count(),
+    }
+
+    daily_sales = active_invoices.values("invoice_date").annotate(
+        total=Sum("grand_total"),
+        invoice_count=Count("id")
+    ).order_by("-invoice_date")[:15]
+
+    context = {
+        "start_date": start_date,
+        "end_date": end_date,
+        "date_error": date_error,
+        "total_invoices": invoices.count(),
+        "total_sales": total_sales,
+        "paid_amount": paid_amount,
+        "pending_amount": pending_amount,
+        "gst_total": gst_total,
+        "status_counts": status_counts,
+        "total_customers": Customer.objects.count(),
+        "total_products": Product.objects.count(),
+        "low_stock_products": Product.objects.filter(stock__lte=5).count(),
+        "daily_sales": daily_sales,
+        "recent_invoices": invoices[:10],
+    }
+
+    return render(request, "accounts/reports.html", context)
