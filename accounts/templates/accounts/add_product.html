@@ -1,496 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Add Product</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f7fb;
-            color: #1f2937;
-        }
-
-        .navbar {
-            background: #ffffff;
-            padding: 20px 7%;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .navbar h2 {
-            margin: 0;
-            font-size: 21px;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 750px;
-            margin: 40px auto;
-        }
-
-        .page-header {
-            margin-bottom: 22px;
-        }
-
-        .page-header h1 {
-            margin: 0 0 8px;
-            font-size: 28px;
-        }
-
-        .page-header p {
-            margin: 0;
-            color: #6b7280;
-        }
-
-        .card {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 7px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        input,
-        textarea {
-            width: 100%;
-            padding: 11px 13px;
-            border: 1px solid #d1d5db;
-            border-radius: 7px;
-            font-size: 14px;
-            font-family: Arial, Helvetica, sans-serif;
-            outline: none;
-        }
-
-        input:focus,
-        textarea:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-        }
-
-        .error {
-            background: #fef2f2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
-            padding: 12px 14px;
-            border-radius: 7px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .success {
-            background: #ecfdf5;
-            color: #047857;
-            border: 1px solid #a7f3d0;
-            padding: 12px 14px;
-            border-radius: 7px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .help-text {
-            margin-top: 5px;
-            font-size: 12px;
-            color: #6b7280;
-        }
-
-        .submit-btn {
-            width: 100%;
-            background: #2563eb;
-            color: #ffffff;
-            border: none;
-            padding: 12px;
-            border-radius: 7px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .submit-btn:hover {
-            background: #1d4ed8;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            color: #9ca3af;
-            font-size: 12px;
-        }
-
-        @media (max-width: 650px) {
-            .row {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-
-            .container {
-                width: 94%;
-            }
-
-            .card {
-                padding: 22px;
-            }
-        }
-    </style>
-<style id="PREMIUM_EMERALD_ADD_PRODUCT">
-    :root {
-        --emerald: #047857;
-        --emerald-dark: #065f46;
-        --emerald-light: #ecfdf5;
-        --text: #17352a;
-        --muted: #718078;
-        --border: #e2ebe5;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-        margin: 0;
-        font-family: "Segoe UI", Arial, sans-serif;
-        background: #f5f9f6;
-        color: var(--text);
-    }
-
-    .navbar {
-        background: #fff;
-        padding: 20px 7%;
-        border-bottom: 1px solid var(--border);
-        box-shadow: 0 3px 15px rgba(16, 75, 48, .04);
-    }
-
-    .navbar h2 {
-        margin: 0;
-        font-size: 21px;
-        font-weight: 750;
-        color: var(--emerald-dark);
-        letter-spacing: -.4px;
-    }
-
-    .container {
-        width: 90%;
-        max-width: 780px;
-        margin: 42px auto;
-    }
-
-    .page-header { margin-bottom: 24px; }
-
-    .page-header h1 {
-        margin: 0 0 8px;
-        font-size: 30px;
-        letter-spacing: -.7px;
-        color: #123b2b;
-    }
-
-    .page-header p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 14px;
-    }
-
-    .card {
-        background: #fff;
-        padding: 34px;
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        box-shadow: 0 10px 32px rgba(18, 59, 43, .06);
-    }
-
-    .form-group { margin-bottom: 21px; }
-
-    label {
-        display: block;
-        margin-bottom: 8px;
-        font-size: 13px;
-        font-weight: 700;
-        color: #304c3e;
-    }
-
-    input, textarea {
-        width: 100%;
-        padding: 13px 15px;
-        border: 1px solid #dce7e0;
-        border-radius: 9px;
-        background: #fff;
-        color: #20392d;
-        font-size: 14px;
-        font-family: inherit;
-        outline: none;
-        transition: border-color .2s, box-shadow .2s;
-    }
-
-    input::placeholder, textarea::placeholder { color: #a0aca5; }
-
-    input:focus, textarea:focus {
-        border-color: var(--emerald);
-        box-shadow: 0 0 0 3px rgba(4, 120, 87, .10);
-    }
-
-    textarea {
-        min-height: 115px;
-        resize: vertical;
-        line-height: 1.5;
-    }
-
-    .row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-
-    .error {
-        background: #fff1f0;
-        color: #b42318;
-        border: 1px solid #f5c8c5;
-        padding: 14px 16px;
-        border-radius: 9px;
-        margin-bottom: 20px;
-        font-size: 14px;
-    }
-
-    .success {
-        background: var(--emerald-light);
-        color: var(--emerald-dark);
-        border: 1px solid #b8e5ce;
-        padding: 14px 16px;
-        border-radius: 9px;
-        margin-bottom: 20px;
-        font-size: 14px;
-    }
-
-    .help-text {
-        margin-top: 7px;
-        font-size: 12px;
-        color: var(--muted);
-    }
-
-    .submit-btn {
-        width: 100%;
-        background: var(--emerald);
-        color: #fff;
-        border: none;
-        padding: 14px;
-        border-radius: 9px;
-        font-size: 15px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: .2s ease;
-    }
-
-    .submit-btn:hover {
-        background: var(--emerald-dark);
-        transform: translateY(-1px);
-        box-shadow: 0 5px 14px rgba(4, 120, 87, .18);
-    }
-
-    .footer {
-        text-align: center;
-        margin-top: 24px;
-        color: #98a89e;
-        font-size: 12px;
-    }
-
-    @media (max-width: 650px) {
-        .row {
-            grid-template-columns: 1fr;
-            gap: 0;
-        }
-
-        .container { width: 94%; margin: 30px auto; }
-        .card { padding: 23px 19px; }
-        .page-header h1 { font-size: 25px; }
-        .navbar { padding: 17px 5%; }
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Product | Advance Billing</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f8f6;color:#18352b;font-family:Arial,sans-serif}
+.nav{height:76px;background:#fff;border-bottom:1px solid #e5eee9;display:flex;align-items:center;justify-content:space-between;padding:0 7%;box-shadow:0 3px 15px #173b2910}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+.logo{width:42px;height:42px;background:#087b52;color:#fff;border-radius:12px;display:grid;place-items:center;font-size:22px}
+.brand small{display:block;font-size:11px;color:#82958b;font-weight:500;margin-top:4px}
+.nav a,.back{color:#087b52;text-decoration:none;font-weight:700}
+.container{max-width:850px;width:92%;margin:42px auto}
+.crumb{font-size:13px;color:#819188;margin-bottom:18px}
+.crumb a{color:#087b52;text-decoration:none}
+.heading{display:flex;justify-content:space-between;align-items:end;margin-bottom:24px}
+.heading h1{margin:0;font-size:30px;color:#173b2d}
+.heading p{color:#7b8d84;margin:8px 0 0;font-size:14px}
+.card{background:#fff;border:1px solid #e5eee9;border-radius:18px;padding:30px;box-shadow:0 10px 35px #173b2909}
+.card h2{font-size:18px;margin:0 0 6px}
+.sub{font-size:13px;color:#829188;margin:0 0 25px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.group{margin-bottom:20px}
+label{display:block;font-size:13px;font-weight:700;margin-bottom:9px;color:#304b3e}
+input,textarea{width:100%;padding:13px 14px;border:1px solid #dce8e1;border-radius:10px;font-size:14px;color:#18352b;background:#fff;outline:none;transition:.2s}
+input:focus,textarea:focus{border-color:#159568;box-shadow:0 0 0 3px #15956818}
+textarea{min-height:105px;resize:vertical}
+.help{font-size:11px;color:#899990;margin-top:7px}
+.actions{display:flex;gap:12px;margin-top:8px}
+button,.back{border:0;border-radius:10px;padding:13px 22px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none}
+button{background:#087b52;color:white}
+button:hover{background:#066642}
+.back{background:#eff5f1;color:#426153}
+.success,.error{padding:13px 15px;border-radius:9px;margin-bottom:16px;font-size:13px}
+.success{background:#e9f8ef;color:#167044}
+.error{background:#fff0ef;color:#b33a34}
+.footer{text-align:center;color:#9aa9a1;font-size:12px;margin:30px}
+@media(max-width:600px){.nav{padding:0 4%;height:68px}.brand{font-size:15px}.container{margin:25px auto}.card{padding:20px}.grid{grid-template-columns:1fr;gap:0}.heading h1{font-size:25px}.actions{flex-direction:column}.actions>*{text-align:center}}
 </style>
 </head>
-
 <body>
-
-<div class="navbar">
-    <h2>Advance Billing System</h2>
+<header class="nav">
+<div class="brand"><div class="logo">P</div><div>Advance Billing<small>SMART BILLING & QR MANAGEMENT</small></div></div>
+<a href="{% url 'product_list' %}">Products</a>
+</header>
+<main class="container">
+<div class="crumb"><a href="{% url 'product_list' %}">Products</a> / Add Product</div>
+<div class="heading"><div><h1>Add Product</h1><p>Add a new item to your inventory.</p></div></div>
+<section class="card">
+<h2>Product information</h2>
+<p class="sub">Enter the product details below to add it to your inventory.</p>
+{% if messages %}{% for message in messages %}<div class="success">{{ message }}</div>{% endfor %}{% endif %}
+{% if error %}<div class="error">{{ error }}</div>{% endif %}
+<form method="POST" action="{% url 'add_product' %}">
+{% csrf_token %}
+<div class="group"><label for="name">Product name *</label><input type="text" id="name" name="name" value="{{ form_data.name }}" placeholder="Enter product name" required minlength="2"></div>
+<div class="group"><label for="category">Category *</label><input type="text" id="category" name="category" value="{{ form_data.category }}" placeholder="e.g. Electronics, Grocery" required></div>
+<div class="grid">
+<div class="group"><label for="price">Price (INR) *</label><input type="number" id="price" name="price" value="{{ form_data.price }}" placeholder="0.00" min="0.01" step="0.01" required><div class="help">Price must be greater than 0.</div></div>
+<div class="group"><label for="stock">Available stock *</label><input type="number" id="stock" name="stock" value="{{ form_data.stock }}" placeholder="0" min="0" step="1" required><div class="help">Stock cannot be negative.</div></div>
 </div>
-
-<div class="container">
-
-    <div class="page-header">
-        <h1>Add Product</h1>
-        <p>Enter product information below.</p>
-    </div>
-
-    <div class="card">
-
-        {% if messages %}
-            {% for message in messages %}
-                <div class="success">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-
-        {% if error %}
-            <div class="error">
-                {{ error }}
-            </div>
-        {% endif %}
-
-        <form
-            method="POST"
-            action="{% url 'add_product' %}"
-        >
-
-            {% csrf_token %}
-
-            <div class="form-group">
-                <label for="name">
-                    Product Name
-                </label>
-
-                <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value="{{ form_data.name }}"
-                    placeholder="Enter product name"
-                    required
-                    minlength="2"
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="category">
-                    Category
-                </label>
-
-                <input
-                    type="text"
-                    id="category"
-                    name="category"
-                    value="{{ form_data.category }}"
-                    placeholder="Enter product category"
-                    required
-                >
-            </div>
-
-            <div class="row">
-
-                <div class="form-group">
-                    <label for="price">
-                        Price
-                    </label>
-
-                    <input
-                        type="number"
-                        id="price"
-                        name="price"
-                        value="{{ form_data.price }}"
-                        placeholder="0.00"
-                        min="0.01"
-                        step="0.01"
-                        required
-                    >
-
-                    <div class="help-text">
-                        Price must be greater than 0.
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="stock">
-                        Stock
-                    </label>
-
-                    <input
-                        type="number"
-                        id="stock"
-                        name="stock"
-                        value="{{ form_data.stock }}"
-                        placeholder="0"
-                        min="0"
-                        step="1"
-                        required
-                    >
-
-                    <div class="help-text">
-                        Stock cannot be negative.
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="form-group">
-                <label for="gst_rate">
-                    GST Rate (%)
-                </label>
-
-                <input
-                    type="number"
-                    id="gst_rate"
-                    name="gst_rate"
-                    value="{{ form_data.gst_rate }}"
-                    placeholder="Example: 18"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="description">
-                    Description
-                </label>
-
-                <textarea
-                    id="description"
-                    name="description"
-                    placeholder="Enter product description (optional)"
-                >{{ form_data.description }}</textarea>
-            </div>
-
-            <button
-                type="submit"
-                class="submit-btn"
-            >
-                Add Product
-            </button>
-
-        </form>
-
-    </div>
-
-    <div class="footer">
-        Advance Billing System with QR
-    </div>
-
-</div>
-
+<div class="group"><label for="gst_rate">GST rate (%) *</label><input type="number" id="gst_rate" name="gst_rate" value="{{ form_data.gst_rate }}" placeholder="Example: 18" min="0" max="100" step="0.01" required></div>
+<div class="group"><label for="description">Description</label><textarea id="description" name="description" placeholder="Enter product description (optional)">{{ form_data.description }}</textarea></div>
+<div class="actions"><button type="submit">Add Product</button><a class="back" href="{% url 'product_list' %}">Cancel</a></div>
+</form>
+</section>
+<footer class="footer">Advance Billing System with QR</footer>
+</main>
 </body>
 </html>
