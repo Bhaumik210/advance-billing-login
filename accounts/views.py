@@ -3143,6 +3143,10 @@ def admin_reports(request):
         total=Sum("gst_amount")
     )["total"] or Decimal("0.00")
 
+    draft_amount = invoices.filter(status="DRAFT").aggregate(
+        total=Sum("grand_total")
+    )["total"] or Decimal("0.00")
+
     status_counts = {
         "PAID": invoices.filter(status="PAID").count(),
         "UNPAID": invoices.filter(status="UNPAID").count(),
@@ -3164,6 +3168,7 @@ def admin_reports(request):
         "paid_amount": paid_amount,
         "pending_amount": pending_amount,
         "gst_total": gst_total,
+        "draft_amount": draft_amount,
         "status_counts": status_counts,
         "total_customers": Customer.objects.count(),
         "total_products": Product.objects.count(),
@@ -3171,5 +3176,24 @@ def admin_reports(request):
         "daily_sales": daily_sales,
         "recent_invoices": invoices[:10],
     }
+
+    if request.GET.get("export") == "pdf" and not date_error:
+        from io import BytesIO
+        from django.template.loader import render_to_string
+        from xhtml2pdf import pisa
+
+        pdf_html = render_to_string(
+            "accounts/reports_pdf.html",
+            {**context, "generated_on": timezone.localdate()},
+        )
+        pdf_buffer = BytesIO()
+        pdf_result = pisa.CreatePDF(pdf_html, dest=pdf_buffer)
+
+        if pdf_result.err:
+            return HttpResponse("PDF generation failed.", status=500)
+
+        response = HttpResponse(pdf_buffer.getvalue(), content_type="application/pdf")
+        response["Content-Disposition"] = 'attachment; filename="billing_reports.pdf"'
+        return response
 
     return render(request, "accounts/reports.html", context)

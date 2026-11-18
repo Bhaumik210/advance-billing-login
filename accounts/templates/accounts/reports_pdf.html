@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Billing Business Report</title>
+<style>
+@page {
+    size: A4;
+    margin: 28px 24px;
+}
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #24352d;
+    font-size: 11px;
+    line-height: 1.4;
+}
+.header {
+    background-color: #087f5b;
+    color: white;
+    padding: 18px;
+}
+.header h1 {
+    font-size: 22px;
+    margin: 0 0 8px 0;
+}
+.header p {
+    margin: 4px 0;
+    font-size: 10px;
+}
+h2 {
+    color: #087f5b;
+    font-size: 15px;
+    margin-top: 20px;
+    margin-bottom: 8px;
+}
+.summary {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+}
+.summary td {
+    width: 50%;
+    padding: 12px;
+    border: 1px solid #dce9e1;
+    background-color: #f2f8f4;
+}
+.metric-label {
+    color: #607468;
+    font-size: 10px;
+}
+.metric-value {
+    font-size: 17px;
+    color: #087f5b;
+    font-weight: bold;
+}
+table.data {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+}
+table.data th {
+    background-color: #087f5b;
+    color: white;
+    padding: 9px 7px;
+    text-align: left;
+    font-size: 10px;
+}
+table.data td {
+    border: 1px solid #dce5de;
+    padding: 8px 7px;
+    font-size: 10px;
+    word-wrap: break-word;
+}
+.status-table td {
+    background-color: #f4f8f6;
+    padding: 9px;
+    border: 1px solid #dce5de;
+}
+.footer {
+    margin-top: 22px;
+    text-align: center;
+    color: #78857e;
+    font-size: 10px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Advance Billing System</h1>
+    <p>Business Performance Report</p>
+    <p>Report Period: {{ start_date|default:"All Time" }} to {{ end_date|default:"All Time" }}</p>
+    <p>Generated on: {{ generated_on }}</p>
+</div>
+
+<h2>Financial Summary</h2>
+<table class="summary">
+<tr>
+    <td>
+        <div class="metric-label">Total Sales</div>
+        <div class="metric-value">Rs. {{ total_sales|floatformat:2 }}</div>
+    </td>
+    <td>
+        <div class="metric-label">Paid Amount</div>
+        <div class="metric-value">Rs. {{ paid_amount|floatformat:2 }}</div>
+    </td>
+</tr>
+<tr>
+    <td>
+        <div class="metric-label">Pending Amount</div>
+        <div class="metric-value">Rs. {{ pending_amount|floatformat:2 }}</div>
+    </td>
+    <td>
+        <div class="metric-label">Total GST</div>
+        <div class="metric-value">Rs. {{ gst_total|floatformat:2 }}</div>
+    </td>
+    <td>
+        <div class="metric-label">Draft Amount</div>
+        <div class="metric-value">Rs. {{ draft_amount|floatformat:2 }}</div>
+    </td>
+    </td>
+</tr>
+</table>
+
+<h2>Business Overview</h2>
+<table class="data">
+<tr><th>Metric</th><th>Count</th></tr>
+<tr><td>Total Invoices</td><td>{{ total_invoices }}</td></tr>
+<tr><td>Total Customers</td><td>{{ total_customers }}</td></tr>
+<tr><td>Total Products</td><td>{{ total_products }}</td></tr>
+<tr><td>Low Stock Products (5 or less)</td><td>{{ low_stock_products }}</td></tr>
+</table>
+
+<h2>Invoice Status Summary</h2>
+<table class="data status-table">
+<tr><th>Status</th><th>Invoices</th></tr>
+<tr><td>Paid</td><td>{{ status_counts.PAID }}</td></tr>
+<tr><td>Unpaid</td><td>{{ status_counts.UNPAID }}</td></tr>
+<tr><td>Draft</td><td>{{ status_counts.DRAFT }}</td></tr>
+<tr><td>Cancelled</td><td>{{ status_counts.CANCELLED }}</td></tr>
+</table>
+
+<h2>Daily Sales Report</h2>
+<table class="data">
+<tr>
+    <th>Date</th>
+    <th>Invoice Count</th>
+    <th>Total Sales (Rs.)</th>
+</tr>
+{% for item in daily_sales %}
+<tr>
+    <td>{{ item.invoice_date|date:"d M Y" }}</td>
+    <td>{{ item.invoice_count }}</td>
+    <td>{{ item.total|floatformat:2 }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="3">No sales data available.</td></tr>
+{% endfor %}
+</table>
+
+<h2>Recent Invoices</h2>
+<table class="data">
+<tr>
+    <th>Invoice No.</th>
+    <th>Customer</th>
+    <th>Date</th>
+    <th>Status</th>
+    <th>Total (Rs.)</th>
+</tr>
+{% for invoice in recent_invoices %}
+<tr>
+    <td>{{ invoice.invoice_number }}</td>
+    <td>{{ invoice.customer.name }}</td>
+    <td>{{ invoice.invoice_date|date:"d M Y" }}</td>
+    <td>{{ invoice.status }}</td>
+    <td>{{ invoice.grand_total|floatformat:2 }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="5">No invoices available.</td></tr>
+{% endfor %}
+</table>
+
+<div class="footer">
+    Advance Billing System — Generated Report
+</div>
+
+</body>
+</html>
+

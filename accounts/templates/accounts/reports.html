@@ -36,7 +36,7 @@ footer{text-align:center;padding:25px;color:#78857e}
 <body>
 <header>
 <h2>Advance Billing System</h2>
-<a href="{% url 'dashboard' %}">← Back to Dashboard</a>
+<a href="{% url 'dashboard' %}">â† Back to Dashboard</a>
 </header>
 
 <main class="container">
@@ -46,6 +46,7 @@ footer{text-align:center;padding:25px;color:#78857e}
 <p>Business performance and billing overview</p>
 </div>
 <a class="btn" href="?start_date={{ start_date }}&end_date={{ end_date }}&export=csv">Download CSV</a>
+<a class="btn" href="?start_date={{ start_date }}&end_date={{ end_date }}&export=pdf">Download PDF</a>
 </div>
 
 <section class="filters">
@@ -66,10 +67,11 @@ footer{text-align:center;padding:25px;color:#78857e}
 </section>
 
 <div class="cards">
-<div class="card"><small>Total Sales</small><h2>₹{{ total_sales|floatformat:2 }}</h2></div>
-<div class="card"><small>Paid Amount</small><h2>₹{{ paid_amount|floatformat:2 }}</h2></div>
-<div class="card"><small>Pending Amount</small><h2>₹{{ pending_amount|floatformat:2 }}</h2></div>
-<div class="card"><small>Total GST</small><h2>₹{{ gst_total|floatformat:2 }}</h2></div>
+<div class="card"><small>Total Sales</small><h2>â‚¹{{ total_sales|floatformat:2 }}</h2></div>
+<div class="card"><small>Paid Amount</small><h2>â‚¹{{ paid_amount|floatformat:2 }}</h2></div>
+<div class="card"><small>Pending Amount</small><h2>â‚¹{{ pending_amount|floatformat:2 }}</h2></div>
+<div class="card"><small>Total GST</small><h2>â‚¹{{ gst_total|floatformat:2 }}</h2></div>
+<div class="card"><small>Draft Amount</small><h2>₹{{ draft_amount|floatformat:2 }}</h2></div>
 </div>
 
 <section class="grid">
@@ -99,7 +101,7 @@ footer{text-align:center;padding:25px;color:#78857e}
 <tr>
 <td>{{ item.invoice_date|date:"d M Y" }}</td>
 <td>{{ item.invoice_count }}</td>
-<td>₹{{ item.total|floatformat:2 }}</td>
+<td>â‚¹{{ item.total|floatformat:2 }}</td>
 </tr>
 {% empty %}
 <tr><td colspan="3">No sales records found.</td></tr>
@@ -121,7 +123,7 @@ footer{text-align:center;padding:25px;color:#78857e}
 <td>{{ invoice.customer.name }}</td>
 <td>{{ invoice.invoice_date|date:"d M Y" }}</td>
 <td><span class="status">{{ invoice.get_status_display }}</span></td>
-<td>₹{{ invoice.grand_total|floatformat:2 }}</td>
+<td>â‚¹{{ invoice.grand_total|floatformat:2 }}</td>
 </tr>
 {% empty %}
 <tr><td colspan="5">No invoices found.</td></tr>
@@ -134,3 +136,4 @@ footer{text-align:center;padding:25px;color:#78857e}
 <footer>Advance Billing System with QR</footer>
 </body>
 </html>
+
