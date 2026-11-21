@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -50,7 +50,7 @@ button:hover{background:#066642}
 <section class="card">
 <h2>Update product information</h2>
 <p class="sub">Make your changes and save the updated product details.</p>
-{% if messages %}{% for message in messages %}<div class="success">{{ message }}</div>{% endfor %}{% endif %}
+{% include "accounts/partials/toast_messages.html" %}
 {% if error %}<div class="error">{{ error }}</div>{% endif %}
 <form method="POST" action="{% url 'edit_product' product.id %}">
 {% csrf_token %}

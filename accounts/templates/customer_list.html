@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -212,17 +212,7 @@
     </div>
 
 
-    {% if messages %}
-
-        {% for message in messages %}
-
-            <div class="message">
-                {{ message }}
-            </div>
-
-        {% endfor %}
-
-    {% endif %}
+    {% include "accounts/partials/toast_messages.html" %}
 
 
     <div class="card">
