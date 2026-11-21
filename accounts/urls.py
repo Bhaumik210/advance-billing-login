@@ -1,4 +1,4 @@
-from django.urls import path
+﻿from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -25,7 +25,12 @@ urlpatterns = [
     path("products/<int:product_id>/delete/", views.delete_product, name="delete_product"),
     path("invoices/create/", views.create_invoice, name="create_invoice"),
     path("invoices/", views.invoice_list, name="invoice_list"),
+    path("invoices/<int:invoice_id>/", views.invoice_detail, name="invoice_detail"),
+    path("invoices/<int:invoice_id>/payments/", views.invoice_payments, name="invoice_payments"),
     path("invoices/<int:invoice_id>/pdf/", views.download_invoice_pdf, name="download_invoice_pdf"),
     path("dashboard/", views.dashboard, name="dashboard"),
     path("reports/", views.admin_reports, name="admin_reports"),
+    path("qr-scanner/", views.qr_scanner, name="qr_scanner"),
 ]
+
+

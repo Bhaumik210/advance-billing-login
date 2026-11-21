@@ -47,6 +47,7 @@ from .models import (
     Product,
     Invoice,
     InvoiceItem,
+    Payment,
 )
 
 
@@ -2489,6 +2490,136 @@ def invoice_list(request):
         {"page_obj": page_obj}
     )
 
+
+@login_required(login_url="distributor_login")
+def invoice_detail(request, invoice_id):
+    invoice = get_object_or_404(
+        Invoice.objects.select_related("customer").prefetch_related(
+            "items__product"
+        ),
+        pk=invoice_id
+    )
+
+    invoice_items = invoice.items.select_related("product").all()
+    payment_history = invoice.payments.order_by("-payment_date", "-id")
+
+    paid_amount = sum(
+        (payment.amount for payment in payment_history),
+        Decimal("0.00")
+    )
+
+    balance = invoice.grand_total - paid_amount
+
+    context = {
+        "invoice": invoice,
+        "invoice_items": invoice_items,
+        "payment_history": payment_history,
+        "paid_amount": paid_amount,
+        "balance": balance,
+    }
+
+    return render(request, "accounts/invoice_detail.html", context)
+
+@login_required(login_url="distributor_login")
+def invoice_payments(request, invoice_id):
+    from datetime import date
+
+    invoice = get_object_or_404(Invoice, pk=invoice_id)
+
+    payment_history = invoice.payments.order_by("-payment_date", "-id")
+    paid_amount = sum(
+        (payment.amount for payment in payment_history),
+        Decimal("0.00")
+    )
+    balance = invoice.grand_total - paid_amount
+    error = None
+
+    if request.method == "POST":
+        if invoice.status in ("DRAFT", "CANCELLED", "PAID"):
+            error = "Payment cannot be added to this invoice."
+        else:
+            try:
+                amount = Decimal(request.POST.get("amount", "0"))
+                if amount <= 0:
+                    raise ValueError("Payment amount must be greater than zero.")
+                if amount != amount.quantize(Decimal("0.01")):
+                    raise ValueError("Payment amount can have maximum 2 decimal places.")
+            except (InvalidOperation, ValueError, TypeError):
+                error = "Please enter a valid payment amount."
+
+            if not error:
+                payment_method = request.POST.get("payment_method", "CASH")
+                valid_methods = dict(Payment.PAYMENT_METHOD_CHOICES)
+
+                if payment_method not in valid_methods:
+                    error = "Please select a valid payment method."
+
+            if not error:
+                payment_date_text = request.POST.get("payment_date", "")
+                try:
+                    payment_date = (
+                        date.fromisoformat(payment_date_text)
+                        if payment_date_text
+                        else timezone.localdate()
+                    )
+                except ValueError:
+                    error = "Please enter a valid payment date."
+
+            if not error and amount > balance:
+                error = "Payment cannot be greater than the remaining balance."
+
+            if not error:
+                with transaction.atomic():
+                    locked_invoice = Invoice.objects.select_for_update().get(pk=invoice_id)
+                    current_paid = sum(
+                        (p.amount for p in locked_invoice.payments.all()),
+                        Decimal("0.00")
+                    )
+                    current_balance = locked_invoice.grand_total - current_paid
+
+                    if amount > current_balance:
+                        error = "Balance changed. Please refresh and try again."
+                    else:
+                        Payment.objects.create(
+                            invoice=locked_invoice,
+                            amount=amount,
+                            payment_date=payment_date,
+                            payment_method=payment_method,
+                            reference=request.POST.get("reference", "").strip(),
+                            notes=request.POST.get("notes", "").strip(),
+                        )
+
+                        new_paid = current_paid + amount
+                        locked_invoice.status = (
+                            "PAID" if new_paid >= locked_invoice.grand_total
+                            else "PARTIAL"
+                        )
+                        locked_invoice.save(update_fields=["status", "updated_at"])
+
+                if not error:
+                    messages.success(request, "Payment recorded successfully.")
+                    return redirect("invoice_payments", invoice_id=invoice_id)
+
+    payment_history = invoice.payments.order_by("-payment_date", "-id")
+    paid_amount = sum(
+        (payment.amount for payment in payment_history),
+        Decimal("0.00")
+    )
+    balance = invoice.grand_total - paid_amount
+
+    return render(
+        request,
+        "accounts/invoice_payments.html",
+        {
+            "invoice": invoice,
+            "payment_history": payment_history,
+            "paid_amount": paid_amount,
+            "balance": balance,
+            "error": error,
+        }
+    )
+
+
 @login_required
 def dashboard(request):
 
@@ -2955,24 +3086,8 @@ def download_invoice_pdf(request, invoice_id):
             f"Line Total: INR {item.line_total:.2f}"
         )
 
-    # Generate complete dynamic QR content from database records.
-    qr_payload_lines = [
-        "ADVANCE BILLING SYSTEM - INVOICE",
-        f"Invoice No: {invoice.invoice_number}",
-        f"Date: {invoice.invoice_date.strftime('%d %b %Y')}",
-        f"Customer: {invoice.customer.name}",
-        f"Product Count: {len(product_summary)}",
-        f"Grand Total: INR {invoice.grand_total:.2f}",
-        f"Status: {invoice.get_status_display()}",
-        "",
-        "PRODUCT SUMMARY:",
-    ]
-
-    qr_payload_lines.extend(
-        product_summary if product_summary else ["No products found."]
-    )
-
-    qr_payload = "\n".join(qr_payload_lines)
+    # Generate a direct URL to the invoice detail page.
+    qr_payload = f"http://192.168.168.139:8000/invoices/{invoice.id}/"
 
     qr_details = [
         Paragraph(
@@ -3197,3 +3312,37 @@ def admin_reports(request):
         return response
 
     return render(request, "accounts/reports.html", context)
+@login_required(login_url="distributor_login")
+def qr_scanner(request):
+    import cv2
+    import numpy as np
+
+    context = {}
+
+    if request.method == "POST":
+        uploaded_file = request.FILES.get("qr_image")
+
+        if not uploaded_file:
+            context["error"] = "Please upload a QR code image."
+        else:
+            try:
+                image_bytes = uploaded_file.read()
+                image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+                image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+                if image is None:
+                    context["error"] = "Invalid image file."
+                else:
+                    detector = cv2.QRCodeDetector()
+                    data, points, _ = detector.detectAndDecode(image)
+
+                    if data:
+                        context["qr_data"] = data
+                    else:
+                        context["error"] = "No QR code detected. Please try another image."
+
+            except Exception:
+                context["error"] = "Unable to scan this image."
+
+    return render(request, "accounts/qr_scanner.html", context)
+

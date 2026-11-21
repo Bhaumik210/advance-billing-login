@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invoice #{{ invoice.id }}</title>
+    <style>
+        body{font-family:Arial,sans-serif;background:#f4f6f8;margin:0;padding:20px;color:#222}
+        .container{max-width:850px;margin:auto;background:white;padding:25px;border-radius:10px}
+        h2{color:#243b53} .row{padding:12px 0;border-bottom:1px solid #eee}
+        .amount{font-size:22px;font-weight:bold;color:#087443}
+        table{width:100%;border-collapse:collapse;margin-top:15px}
+        th,td{text-align:left;padding:12px;border-bottom:1px solid #ddd}
+        th{background:#f1f4f7}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Invoice Details</h2>
+    <div class="row"><strong>Invoice ID:</strong> #{{ invoice.id }}</div>
+    <div class="row"><strong>Customer:</strong> {{ invoice.customer }}</div>
+    <div class="row"><strong>Grand Total:</strong> ₹{{ invoice.grand_total }}</div>
+    <div class="row"><strong>Paid Amount:</strong> ₹{{ paid_amount }}</div>
+    <div class="row"><strong>Balance:</strong> <span class="amount">₹{{ balance }}</span></div>
+
+    <h3>Invoice Items</h3>
+    <table>
+        <tr><th>Product</th><th>Details</th></tr>
+        {% for item in invoice_items %}
+        <tr><td>{{ item.product }}</td><td>{{ item }}</td></tr>
+        {% empty %}
+        <tr><td colspan="2">No items found.</td></tr>
+        {% endfor %}
+    </table>
+
+    <h3>Payment History</h3>
+    <table>
+        <tr><th>Date</th><th>Amount</th><th>Method</th></tr>
+        {% for payment in payment_history %}
+        <tr>
+            <td>{{ payment.payment_date }}</td>
+            <td>₹{{ payment.amount }}</td>
+            <td>{{ payment.payment_method }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">No payments recorded.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+</body>
+</html>

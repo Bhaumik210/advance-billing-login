@@ -1,4 +1,4 @@
-import os
+﻿import os
 """
 Django settings for advance_billing project.
 
@@ -20,6 +20,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
+    '192.168.168.139',
 ]
 
 
@@ -124,9 +125,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Login settings
-LOGIN_URL = '/login/'
-
-
+LOGIN_URL = '/login/distributor/'
 # Separate cookies for this project
 CSRF_COOKIE_NAME = 'advance_billing_csrf'
 SESSION_COOKIE_NAME = 'advance_billing_session'
@@ -156,3 +155,5 @@ DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
     EMAIL_HOST_USER or "webmaster@localhost"
 )
+
+
