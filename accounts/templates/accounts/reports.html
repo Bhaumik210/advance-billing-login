@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -52,14 +52,14 @@ footer{text-align:center;padding:25px;color:#78857e}
 <section class="filters">
 <h3>Filter Reports by Date</h3>
 {% if date_error %}<div class="error">{{ date_error }}</div>{% endif %}
-<form method="get">
+<form method="get" id="reportDateForm">
 <div class="field">
 <label for="start_date">Start Date</label>
-<input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+<input type="date" id="start_date" name="start_date" value="{{ start_date }}" required>
 </div>
 <div class="field">
 <label for="end_date">End Date</label>
-<input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+<input type="date" id="end_date" name="end_date" value="{{ end_date }}" required>
 </div>
 <button class="btn" type="submit">Apply Filter</button>
 <a class="btn btn-light" href="{% url 'admin_reports' %}">Reset</a>
@@ -134,6 +134,35 @@ footer{text-align:center;padding:25px;color:#78857e}
 </section>
 </main>
 <footer>Advance Billing System with QR</footer>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("reportDateForm");
+    const start = document.getElementById("start_date");
+    const end = document.getElementById("end_date");
+
+    if (!form || !start || !end) return;
+
+    function validateDates() {
+        end.setCustomValidity("");
+
+        if (start.value && end.value && start.value > end.value) {
+            end.setCustomValidity("End date must be on or after start date.");
+        }
+    }
+
+    start.addEventListener("change", validateDates);
+    end.addEventListener("change", validateDates);
+
+    form.addEventListener("submit", function (event) {
+        validateDates();
+
+        if (!start.value || !end.value || !form.checkValidity()) {
+            event.preventDefault();
+            form.reportValidity();
+        }
+    });
+});
+</script>
 </body>
 </html>
 

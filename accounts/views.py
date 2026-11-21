@@ -3198,28 +3198,33 @@ def admin_reports(request):
 
     invoices = Invoice.objects.select_related("customer").all().order_by("-invoice_date")
 
+    date_filter_submitted = "start_date" in request.GET or "end_date" in request.GET
+
     start_date = request.GET.get("start_date", "").strip()
     end_date = request.GET.get("end_date", "").strip()
     parsed_start = None
     parsed_end = None
     date_error = ""
 
-    try:
-        if start_date:
-            parsed_start = date.fromisoformat(start_date)
-        if end_date:
-            parsed_end = date.fromisoformat(end_date)
-        if parsed_start and parsed_end and parsed_start > parsed_end:
-            date_error = "Start date cannot be later than end date."
-    except ValueError:
-        date_error = "Please enter valid dates."
+    if date_filter_submitted:
+        if not start_date or not end_date:
+            date_error = "Both start date and end date are required."
+        else:
+            try:
+                parsed_start = date.fromisoformat(start_date)
+                parsed_end = date.fromisoformat(end_date)
+
+                if parsed_start > parsed_end:
+                    date_error = "Start date cannot be later than end date."
+
+            except ValueError:
+                date_error = "Please enter valid dates."
 
     if not date_error:
         if parsed_start:
             invoices = invoices.filter(invoice_date__gte=parsed_start)
         if parsed_end:
             invoices = invoices.filter(invoice_date__lte=parsed_end)
-
     if request.GET.get("export") == "csv" and not date_error:
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="billing_reports.csv"'
