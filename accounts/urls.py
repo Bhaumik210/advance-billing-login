@@ -1,10 +1,11 @@
-﻿from django.urls import path
+from django.urls import path
 from . import views
 
 urlpatterns = [
     path("register/admin/", views.admin_register, name="admin_register"),
     path("api/register/admin/", views.admin_register_api, name="admin_register_api"),
     path("login/admin/", views.admin_login, name="admin_login"),
+    path("logout/", views.user_logout, name="logout"),
     path("admin-password/otp/", views.admin_generate_otp, name="admin_generate_otp"),
     path("admin-password/", views.admin_forgot_password, name="admin_forgot_password"),
     path("login/distributor/", views.distributor_login, name="distributor_login"),
@@ -32,5 +33,3 @@ urlpatterns = [
     path("reports/", views.admin_reports, name="admin_reports"),
     path("qr-scanner/", views.qr_scanner, name="qr_scanner"),
 ]
-
-

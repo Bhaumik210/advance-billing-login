@@ -120,3 +120,46 @@ class DistributorLoginTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("_auth_user_id", self.client.session)
+
+class LogoutTests(TestCase):
+
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            username="logout_admin",
+            email="logout_admin@example.com",
+            password="StrongPass123"
+        )
+        self.distributor = User.objects.create_user(
+            username="logout_distributor",
+            email="logout_distributor@example.com",
+            password="StrongPass123"
+        )
+        DistributorProfile.objects.create(
+            user=self.distributor,
+            phone="9876543211"
+        )
+
+    def test_admin_logout(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("logout"))
+
+        self.assertRedirects(
+            response, reverse("admin_login"), fetch_redirect_response=False
+        )
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_distributor_logout(self):
+        self.client.force_login(self.distributor)
+        response = self.client.post(reverse("logout"))
+
+        self.assertRedirects(
+            response, reverse("distributor_login"), fetch_redirect_response=False
+        )
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_logout_rejects_get_request(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("logout"))
+
+        self.assertEqual(response.status_code, 405)
+        self.assertIn("_auth_user_id", self.client.session)

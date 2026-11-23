@@ -18,6 +18,7 @@ from django.shortcuts import (
 from django.contrib.auth import (
     authenticate,
     login,
+    logout as auth_logout,
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -238,6 +239,21 @@ def distributor_login(request):
         "accounts/distributor_login.html"
     )
 
+
+@require_POST
+def user_logout(request):
+    is_distributor = (
+        request.user.is_authenticated
+        and DistributorProfile.objects.filter(user=request.user).exists()
+    )
+
+    auth_logout(request)
+    messages.success(request, "You have been logged out successfully.")
+
+    if is_distributor:
+        return redirect("distributor_login")
+
+    return redirect("admin_login")
 
 def distributor_register(request):
 

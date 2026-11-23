@@ -5,6 +5,7 @@ from .auth_views import (
     admin_register_api,
     admin_login,
     distributor_login,
+    user_logout,
     distributor_register,
     generate_otp,
     verify_otp,
