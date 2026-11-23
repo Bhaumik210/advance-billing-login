@@ -1,235 +1,95 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login</title>
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f7fb;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .login-wrapper {
-            width: 100%;
-            max-width: 420px;
-        }
-
-        .brand {
-            text-align: center;
-            margin-bottom: 22px;
-        }
-
-        .brand h1 {
-            font-size: 28px;
-            color: #1f2937;
-            margin-bottom: 6px;
-        }
-
-        .brand p {
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .login-card {
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 32px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e5e7eb;
-        }
-
-        .login-header {
-            margin-bottom: 25px;
-        }
-
-        .login-header h2 {
-            font-size: 24px;
-            color: #111827;
-            margin-bottom: 6px;
-        }
-
-        .login-header p {
-            font-size: 14px;
-            color: #6b7280;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 7px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 15px;
-            outline: none;
-            transition: 0.2s ease;
-        }
-
-        .form-group input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
-        }
-
-        .login-btn {
-            width: 100%;
-            border: none;
-            background: #1f2937;
-            color: #ffffff;
-            padding: 13px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s ease;
-        }
-
-        .login-btn:hover {
-            background: #111827;
-        }
-
-        .error-message {
-            background: #fef2f2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
-            padding: 10px 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 18px;
-        }
-
-        .switch-section {
-            margin-top: 22px;
-            text-align: center;
-            font-size: 14px;
-            color: #6b7280;
-        }
-
-        .switch-section a {
-            color: #2563eb;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .switch-section a:hover {
-            text-decoration: underline;
-        }
-
-        .footer-text {
-            text-align: center;
-            margin-top: 18px;
-            font-size: 12px;
-            color: #9ca3af;
-        }
-
-        @media (max-width: 480px) {
-            .login-card {
-                padding: 24px;
-            }
-
-            .brand h1 {
-                font-size: 24px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101b18">
+<title>Admin Login | Advance Billing System</title>
+<style>
+:root{--bg:#101b18;--panel:#172722;--gold:#d7ad68;--gold2:#f0d5a0;--muted:#a9b9b1;--white:#f7f8f4;--line:rgba(255,255,255,.12);--danger:#ffb4a9}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 12% 12%,#294638 0,transparent 34%),radial-gradient(circle at 90% 85%,#263c32 0,transparent 32%),var(--bg);font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--white);display:grid;place-items:center;padding:34px}
+.page{width:min(1080px,100%);min-height:650px;display:grid;grid-template-columns:1.05fr .95fr;background:#14221d;border:1px solid var(--line);border-radius:26px;overflow:hidden;box-shadow:0 30px 90px #0008}
+.visual{padding:58px 54px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(145deg,rgba(39,72,55,.92),rgba(17,32,26,.98));position:relative;overflow:hidden}
+.visual:after{content:"";position:absolute;width:360px;height:360px;border:1px solid #ffffff16;border-radius:50%;right:-150px;bottom:-150px;box-shadow:0 0 0 35px #ffffff08,0 0 0 75px #ffffff05}
+.brand{display:flex;align-items:center;gap:13px;font-weight:700;letter-spacing:.2px}.brand-mark{width:42px;height:42px;border-radius:13px;background:var(--gold);color:#18251e;display:grid;place-items:center;font-size:20px;font-weight:900}
+.eyebrow{color:var(--gold2);font-size:12px;letter-spacing:2.4px;text-transform:uppercase;font-weight:700;margin:0 0 18px}
+.hero h1{font-size:clamp(36px,4vw,53px);line-height:1.08;letter-spacing:-1.8px;margin:0 0 20px;max-width:490px}.hero h1 span{color:var(--gold2)}
+.hero p{color:#c0cec6;line-height:1.8;max-width:430px;font-size:15px}
+.features{display:grid;gap:15px;margin-top:34px}.feature{display:flex;align-items:center;gap:13px;color:#e2eae5;font-size:14px}.feature-icon{width:34px;height:34px;border:1px solid #ffffff24;border-radius:10px;display:grid;place-items:center;color:var(--gold2)}
+.visual-foot{color:#9caf9f;font-size:12px;letter-spacing:.4px;position:relative;z-index:1}
+.form-side{padding:54px 58px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(160deg,#1b2c25,#14221d)}
+.form-logo{display:flex;justify-content:center;margin-bottom:25px}.form-logo img{width:76px;height:76px;object-fit:contain;border-radius:16px}
+.role{display:inline-flex;align-items:center;gap:8px;color:var(--gold2);background:#d7ad6818;border:1px solid #d7ad6840;border-radius:30px;padding:7px 13px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:0 auto 17px}
+.form-heading{text-align:center;margin-bottom:30px}.form-heading h2{font-size:29px;letter-spacing:-.7px;margin:0 0 9px}.form-heading p{margin:0;color:var(--muted);font-size:14px}
+.error-message{padding:12px 14px;border:1px solid #e78c8066;background:#a83d3024;color:#ffd0c9;border-radius:11px;font-size:13px;margin-bottom:18px}
+.form-group{margin-bottom:19px}.form-group label{display:block;color:#e1e9e3;font-size:13px;font-weight:600;margin-bottom:9px}
+.input-wrap{position:relative}.form-group input{width:100%;height:51px;padding:0 15px;border:1px solid #ffffff20;border-radius:11px;background:#0e1915;color:#fff;font-size:14px;outline:none;transition:.2s}
+.form-group input::placeholder{color:#71847a}.form-group input:focus{border-color:var(--gold);box-shadow:0 0 0 3px #d7ad6820}
+.password-input{padding-right:78px!important}.toggle-password{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--gold2);font-size:12px;font-weight:700;cursor:pointer;padding:8px}
+.form-options{display:flex;justify-content:flex-end;margin:-5px 0 22px}.form-options a,.switch a{color:var(--gold2);text-decoration:none;font-size:13px;font-weight:600}.form-options a:hover,.switch a:hover{text-decoration:underline}
+.login-btn{width:100%;height:52px;border:0;border-radius:11px;background:linear-gradient(110deg,#c99a50,#e4c184);color:#1b241d;font-size:14px;font-weight:800;letter-spacing:.2px;cursor:pointer;box-shadow:0 9px 24px #c99a5026;transition:transform .2s,filter .2s}
+.login-btn:hover{filter:brightness(1.07);transform:translateY(-2px)}.login-btn:focus-visible,.toggle-password:focus-visible,a:focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
+.switch{text-align:center;color:#a9b9b1;font-size:13px;margin-top:22px;line-height:1.9}.switch a{margin-left:4px}.secure{text-align:center;color:#73877c;font-size:11px;margin-top:27px}
+@media(max-width:760px){body{padding:15px}.page{grid-template-columns:1fr;max-width:520px}.visual{padding:30px;min-height:290px}.hero h1{font-size:34px}.hero p{font-size:13px}.features{grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.feature{font-size:12px}.visual-foot{margin-top:25px}.form-side{padding:38px 28px}}
+@media(max-width:390px){body{padding:8px}.visual{padding:24px}.form-side{padding:32px 20px}.features{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
 </head>
-
 <body>
-
-<div class="login-wrapper">
-
-    <div class="brand">
-        <h1>Advance Billing System</h1>
-        <p>Secure Billing & QR Management Portal</p>
+{% include "accounts/partials/toast_messages.html" %}
+<main class="page">
+<section class="visual">
+  <div class="brand"><span class="brand-mark">A</span><span>ADVANCE BILLING</span></div>
+  <div class="hero">
+    <p class="eyebrow">Smart business. Simplified.</p>
+    <h1>Billing made simple.<br><span>Business made smarter.</span></h1>
+    <p>Manage your billing operations with clarity, speed and confidence ? all from one secure workspace.</p>
+    <div class="features">
+      <div class="feature"><span class="feature-icon">?</span> Smart invoice management</div>
+      <div class="feature"><span class="feature-icon">?</span> QR-enabled billing</div>
+      <div class="feature"><span class="feature-icon">?</span> Organized records</div>
+      <div class="feature"><span class="feature-icon">?</span> Secure access</div>
     </div>
-
-    <div class="login-card">
-
-        <div class="login-header">
-            <h2>Admin Login</h2>
-            <p>Sign in to access the administration panel.</p>
-        </div>
-
-        {% if error %}
-            <div class="error-message">
-                {{ error }}
-            </div>
-        {% endif %}
-
-        <form method="POST">
-            {% csrf_token %}
-
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    placeholder="Enter admin username"
-                    autocomplete="username"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    placeholder="Enter your password"
-                    autocomplete="current-password"
-                    required
-                >
-            </div>
-
-            <button type="submit" class="login-btn">
-                Sign In as Admin
-            </button>
-        </form>
-
-        <div class="switch-section">
-            <a href="{% url 'admin_generate_otp' %}">
-                Forgot Password?
-            </a>
-        </div>
-
-        <div class="switch-section">
-            Distributor account?
-            <a href="{% url 'distributor_login' %}">
-                Distributor Login
-            </a>
-        </div>
-
+  </div>
+  <div class="visual-foot">ADVANCE BILLING SYSTEM WITH QR ? BUILT FOR BETTER BUSINESS</div>
+</section>
+<section class="form-side">
+  <div class="form-logo"><img src="{% static 'accounts/images/logo.png' %}" alt="Advance Billing System logo"></div>
+  <div class="role">? Admin portal</div>
+  <div class="form-heading"><h2>Welcome back</h2><p>Sign in to manage your billing workspace.</p></div>
+  {% if error %}<div class="error-message" role="alert">{{ error }}</div>{% endif %}
+  <form method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="username">Username or email</label>
+      <input type="text" id="username" name="username" placeholder="Enter your username or email" autocomplete="username" required>
     </div>
-
-    <div class="footer-text">
-        Advance Billing System with QR
+    <div class="form-group">
+      <label for="password">Password</label>
+      <div class="input-wrap">
+        <input class="password-input" type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+        <button class="toggle-password" type="button" id="togglePassword" aria-label="Show password" aria-controls="password">Show</button>
+      </div>
     </div>
-
-</div>
-
+    <div class="form-options"><a href="{% url 'admin_generate_otp' %}">Forgot Password?</a></div>
+    <button type="submit" class="login-btn">Sign In as Admin</button>
+  </form>
+  <div class="switch">Need distributor access?<br><a href="{% url 'distributor_login' %}">Distributor Login</a></div>
+  <div class="secure">Your account is protected with secure sign-in.</div>
+</section>
+</main>
+<script>
+(function(){
+ const input=document.getElementById("password");
+ const toggle=document.getElementById("togglePassword");
+ if(toggle&&input) toggle.addEventListener("click",function(){
+   const show=input.type==="password";
+   input.type=show?"text":"password";
+   toggle.textContent=show?"Hide":"Show";
+   toggle.setAttribute("aria-label",show?"Hide password":"Show password");
+ });
+})();
+</script>
 </body>
 </html>
