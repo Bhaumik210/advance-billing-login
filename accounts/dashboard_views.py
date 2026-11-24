@@ -33,7 +33,7 @@ from django.contrib.auth import (
     login,
 )
 
-from django.contrib.auth.decorators import login_required
+from .decorators import admin_required, distributor_required
 
 from django.contrib.auth.models import User
 
@@ -70,7 +70,7 @@ from .models import (
 )
 
 
-@login_required
+@admin_required
 def dashboard(request):
 
     return render(
@@ -79,17 +79,15 @@ def dashboard(request):
     )
 
 
-@login_required(login_url='admin_login')
+@admin_required
 def admin_reports(request):
     """Admin-only business reports with date filtering and CSV export."""
     import csv
     from datetime import date
     from decimal import Decimal
     from django.db.models import Sum, Count
-    from django.http import HttpResponse, HttpResponseForbidden
+    from django.http import HttpResponse
 
-    if not request.user.is_staff:
-        return HttpResponseForbidden("You are not authorized to access reports.")
 
     invoices = Invoice.objects.select_related("customer").all().order_by("-invoice_date")
 
@@ -214,7 +212,7 @@ def admin_reports(request):
     return render(request, "accounts/reports.html", context)
 
 
-@login_required(login_url='distributor_login')
+@distributor_required
 def qr_scanner(request):
     import re
     from decimal import Decimal

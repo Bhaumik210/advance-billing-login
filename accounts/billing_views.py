@@ -34,6 +34,7 @@ from django.contrib.auth import (
 )
 
 from django.contrib.auth.decorators import login_required
+from .decorators import distributor_required
 
 from django.contrib.auth.models import User
 
@@ -70,7 +71,7 @@ from .models import (
 )
 
 
-@login_required(login_url='distributor_login')
+@distributor_required
 def create_invoice(request):
 
     error = None
@@ -601,7 +602,7 @@ def create_invoice(request):
     )
 
 
-@login_required(login_url='distributor_login')
+@distributor_required
 def invoice_list(request):
     invoices = (
         Invoice.objects
@@ -620,7 +621,7 @@ def invoice_list(request):
     )
 
 
-@login_required(login_url='distributor_login')
+@distributor_required
 def invoice_detail(request, invoice_id):
     invoice = get_object_or_404(
         Invoice.objects.select_related("customer").prefetch_related(
@@ -650,7 +651,7 @@ def invoice_detail(request, invoice_id):
     return render(request, "accounts/invoice_detail.html", context)
 
 
-@login_required(login_url='distributor_login')
+@distributor_required
 def download_invoice_pdf(request, invoice_id):
     """Generate a branded PDF for an invoice created in this session."""
 

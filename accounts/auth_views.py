@@ -21,6 +21,7 @@ from django.contrib.auth import (
     logout as auth_logout,
 )
 from django.contrib.auth.decorators import login_required
+from .decorators import distributor_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -827,9 +828,7 @@ def admin_forgot_password(request):
     )
 
 
-@login_required(
-    login_url="distributor_login"
-)
+@distributor_required
 def distributor_profile(request):
     # Fetch the complete profile so business details and logo
     # are available to distributor_profile.html.
@@ -850,9 +849,7 @@ def distributor_profile(request):
     )
 
 
-@login_required(
-    login_url="distributor_login"
-)
+@distributor_required
 def edit_distributor_profile(request):
     user = request.user
 

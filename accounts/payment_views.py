@@ -34,6 +34,7 @@ from django.contrib.auth import (
 )
 
 from django.contrib.auth.decorators import login_required
+from .decorators import distributor_required
 
 from django.contrib.auth.models import User
 
@@ -70,7 +71,7 @@ from .models import (
 )
 
 
-@login_required(login_url='distributor_login')
+@distributor_required
 def invoice_payments(request, invoice_id):
     from datetime import date
 

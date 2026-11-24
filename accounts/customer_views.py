@@ -20,6 +20,7 @@ from django.contrib.auth import (
     login,
 )
 from django.contrib.auth.decorators import login_required
+from .decorators import distributor_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -145,6 +146,7 @@ def customer_register_api(request):
     }, status=201)
 
 
+@distributor_required
 def add_customer(request):
 
     error = None
@@ -296,9 +298,7 @@ def add_customer(request):
     )
 
 
-@login_required(
-    login_url="distributor_login"
-)
+@distributor_required
 def customer_list(request):
 
     search_query = request.GET.get(
@@ -334,9 +334,7 @@ def customer_list(request):
     )
 
 
-@login_required(
-    login_url="distributor_login"
-)
+@distributor_required
 def edit_customer(
     request,
     customer_id
@@ -496,9 +494,7 @@ def edit_customer(
     )
 
 
-@login_required(
-    login_url="distributor_login"
-)
+@distributor_required
 def delete_customer(
     request,
     customer_id

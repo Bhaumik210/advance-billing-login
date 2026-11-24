@@ -20,6 +20,7 @@ from django.contrib.auth import (
     login,
 )
 from django.contrib.auth.decorators import login_required
+from .decorators import distributor_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -43,9 +44,7 @@ from .models import (
 )
 
 
-@login_required(
-    login_url="distributor_login"
-)
+@distributor_required
 def add_product(request):
 
     error = None
@@ -243,9 +242,7 @@ def add_product(request):
     )
 
 
-@login_required(
-    login_url="distributor_login"
-)
+@distributor_required
 def product_list(request):
 
     search_query = request.GET.get(
@@ -292,9 +289,7 @@ def product_list(request):
     )
 
 
-@login_required(
-    login_url="distributor_login"
-)
+@distributor_required
 def delete_product(
     request,
     product_id
@@ -331,9 +326,7 @@ def delete_product(
     )
 
 
-@login_required(
-    login_url="distributor_login"
-)
+@distributor_required
 def edit_product(
     request,
     product_id
