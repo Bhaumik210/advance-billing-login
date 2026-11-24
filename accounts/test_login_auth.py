@@ -163,3 +163,27 @@ class LogoutTests(TestCase):
 
         self.assertEqual(response.status_code, 405)
         self.assertIn("_auth_user_id", self.client.session)
+
+    def test_admin_cannot_access_dashboard_after_logout(self):
+        self.client.force_login(self.admin)
+        self.client.post(reverse("logout"))
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            f'{reverse("admin_login")}?next={reverse("dashboard")}',
+        )
+
+    def test_distributor_cannot_access_profile_after_logout(self):
+        self.client.force_login(self.distributor)
+        self.client.post(reverse("logout"))
+
+        response = self.client.get(reverse("distributor_profile"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            f'{reverse("distributor_login")}?next={reverse("distributor_profile")}',
+        )
