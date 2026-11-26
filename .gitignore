@@ -12,3 +12,12 @@ db.sqlite3
 
 # Environment variables and secrets
 .env
+# Production static files
+staticfiles/
+
+# User uploaded media
+media/
+
+# Environment secrets
+.env.*
+!.env.example

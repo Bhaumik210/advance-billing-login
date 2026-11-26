@@ -32,11 +32,12 @@ def admin_required(view_func):
             user=request.user
         ).exists()
 
-        if is_distributor:
+        if is_distributor or not request.user.is_superuser:
             raise PermissionDenied(
-                "Only administrators can access this page."
+                "Only authorized administrators can access this page."
             )
 
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view
+

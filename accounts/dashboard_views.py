@@ -1,4 +1,4 @@
-import secrets
+﻿import secrets
 
 from django.db import IntegrityError
 
@@ -236,7 +236,8 @@ def qr_scanner(request):
 
         try:
             invoice = Invoice.objects.select_related("customer").get(
-                pk=int(match.group(1))
+                pk=int(match.group(1)),
+                distributor=request.user.distributor_profile
             )
         except (Invoice.DoesNotExist, ValueError):
             return None, "Invoice not found."
@@ -282,6 +283,8 @@ def qr_scanner(request):
 
         if not uploaded_file:
             context["error"] = "Please upload a QR code image."
+        elif uploaded_file.size > 5 * 1024 * 1024:
+            context["error"] = "QR image must be 5 MB or smaller."
         else:
             try:
                 image_bytes = uploaded_file.read()
@@ -311,3 +314,4 @@ def qr_scanner(request):
                 context["error"] = "Unable to scan this image."
 
     return render(request, "accounts/qr_scanner.html", context)
+

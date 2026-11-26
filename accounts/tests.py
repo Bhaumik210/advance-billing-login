@@ -1,4 +1,4 @@
-from django.test import TestCase
+﻿from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from accounts.models import DistributorProfile
@@ -18,6 +18,13 @@ class AdminRegistrationTests(TestCase):
             "confirm_password": "Strong!Admin2026#Qx",
         }
 
+        self.admin = User.objects.create_superuser(
+            username="authorized_admin",
+            email="authorized@example.com",
+            password="SecureAdmin2026!"
+        )
+        self.client.force_login(self.admin)
+
     def register(self, **overrides):
         data = {**self.data, **overrides}
         return self.client.post(
@@ -34,6 +41,19 @@ class AdminRegistrationTests(TestCase):
         self.assertFalse(user.is_staff)
         self.assertFalse(user.is_superuser)
 
+    def test_anonymous_user_cannot_register_admin(self):
+        self.client.logout()
+        response = self.register()
+        self.assertEqual(response.status_code, 403)
+
+    def test_normal_user_cannot_register_admin(self):
+        normal_user = User.objects.create_user(
+            username="normaluser",
+            password="NormalPass2026!"
+        )
+        self.client.force_login(normal_user)
+        response = self.register()
+        self.assertEqual(response.status_code, 403)
     def test_admin_registration_get_not_allowed(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 405)
@@ -65,6 +85,22 @@ class AdminRegistrationTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
 
+
+    def test_admin_registration_weak_password(self):
+        response = self.register(
+            password="weakpass",
+            confirm_password="weakpass",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_admin_registration_missing_required_field(self):
+        response = self.register(full_name="")
+        self.assertEqual(response.status_code, 400)
+
+    def test_admin_registration_invalid_username(self):
+        response = self.register(username="invalid username!")
+        self.assertEqual(response.status_code, 400)
+
 class DistributorRegistrationTests(TestCase):
     def setUp(self):
         self.url = reverse("distributor_register")
@@ -74,6 +110,13 @@ class DistributorRegistrationTests(TestCase):
             "phone": "9876543210",
             "password": "SecurePass2026",
         }
+
+        self.admin = User.objects.create_superuser(
+            username="authorized_admin",
+            email="authorized@example.com",
+            password="SecureAdmin2026!"
+        )
+        self.client.force_login(self.admin)
 
     def register(self, **overrides):
         data = {**self.data, **overrides}
@@ -116,3 +159,5 @@ class DistributorRegistrationTests(TestCase):
         response = self.register()
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "already registered")
+
+

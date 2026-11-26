@@ -138,7 +138,12 @@ def add_product(request):
                         price_value
                     )
 
-                    if price <= 0:
+                    if not price.is_finite():
+                        error = (
+                            "Enter a valid price."
+                        )
+
+                    elif price <= 0:
 
                         error = (
                             "Price must be greater than 0."
@@ -194,7 +199,13 @@ def add_product(request):
                         gst_value
                     )
 
-                    if gst_rate < 0:
+                    if not gst_rate.is_finite():
+
+                        error = (
+                            "Enter a valid GST rate."
+                        )
+
+                    elif gst_rate < 0:
 
                         error = (
                             "GST rate cannot be negative."
@@ -215,6 +226,7 @@ def add_product(request):
         if error is None:
 
             Product.objects.create(
+                distributor=request.user.distributor_profile,
                 name=name,
                 category=category,
                 price=price,
@@ -250,7 +262,7 @@ def product_list(request):
         ""
     ).strip()
 
-    products = Product.objects.all()
+    products = Product.objects.filter(distributor=request.user.distributor_profile)
 
     if search_query:
 
@@ -298,10 +310,7 @@ def delete_product(
     if request.method != "POST":
         return redirect("product_list")
 
-    product = get_object_or_404(
-        Product,
-        id=product_id
-    )
+    product = get_object_or_404(Product, id=product_id, distributor=request.user.distributor_profile)
 
     product_name = product.name
 
@@ -332,10 +341,7 @@ def edit_product(
     product_id
 ):
 
-    product = get_object_or_404(
-        Product,
-        id=product_id
-    )
+    product = get_object_or_404(Product, id=product_id, distributor=request.user.distributor_profile)
 
     error = None
 
@@ -543,3 +549,4 @@ def edit_product(
             "error": error
         }
     )
+

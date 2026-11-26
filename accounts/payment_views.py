@@ -75,7 +75,7 @@ from .models import (
 def invoice_payments(request, invoice_id):
     from datetime import date
 
-    invoice = get_object_or_404(Invoice, pk=invoice_id)
+    invoice = get_object_or_404(Invoice, pk=invoice_id, distributor=request.user.distributor_profile)
 
     payment_history = invoice.payments.order_by("-payment_date", "-id")
     paid_amount = sum(
@@ -91,6 +91,8 @@ def invoice_payments(request, invoice_id):
         else:
             try:
                 amount = Decimal(request.POST.get("amount", "0"))
+                if not amount.is_finite():
+                    raise ValueError("Payment amount must be finite.")
                 if amount <= 0:
                     raise ValueError("Payment amount must be greater than zero.")
                 if amount != amount.quantize(Decimal("0.01")):
@@ -121,7 +123,7 @@ def invoice_payments(request, invoice_id):
 
             if not error:
                 with transaction.atomic():
-                    locked_invoice = Invoice.objects.select_for_update().get(pk=invoice_id)
+                    locked_invoice = Invoice.objects.select_for_update().get(pk=invoice_id, distributor=request.user.distributor_profile)
                     current_paid = sum(
                         (p.amount for p in locked_invoice.payments.all()),
                         Decimal("0.00")

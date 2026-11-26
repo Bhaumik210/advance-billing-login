@@ -1,4 +1,4 @@
-import secrets
+﻿import secrets
 from django.db import IntegrityError
 from django.views.decorators.http import require_POST
 from django.contrib.auth.password_validation import validate_password
@@ -114,7 +114,7 @@ def customer_register_api(request):
             "message": "Please enter a valid address."
         }, status=400)
 
-    if Customer.objects.filter(email__iexact=email).exists():
+    if Customer.objects.filter(distributor=request.user.distributor_profile, email__iexact=email).exists():
         return JsonResponse({
             "success": False,
             "message": "A customer with this email already exists."
@@ -122,6 +122,7 @@ def customer_register_api(request):
 
     try:
         customer = Customer.objects.create(
+            distributor=request.user.distributor_profile,
             name=name,
             email=email,
             phone=phone,
@@ -266,12 +267,13 @@ def add_customer(request):
                 )
 
         if error is None:
-            if Customer.objects.filter(email__iexact=email).exists():
+            if Customer.objects.filter(distributor=request.user.distributor_profile, email__iexact=email).exists():
                 error = "A customer with this email already exists."
             else:
                 try:
                     Customer.objects.create(
-                        name=name,
+            distributor=request.user.distributor_profile,
+            name=name,
                         email=email,
                         phone=phone,
                         address=address
@@ -306,7 +308,7 @@ def customer_list(request):
         ""
     ).strip()
 
-    customers = Customer.objects.all()
+    customers = Customer.objects.filter(distributor=request.user.distributor_profile)
 
     if search_query:
 
@@ -340,10 +342,7 @@ def edit_customer(
     customer_id
 ):
 
-    customer = get_object_or_404(
-        Customer,
-        id=customer_id
-    )
+    customer = get_object_or_404(Customer, id=customer_id, distributor=request.user.distributor_profile)
 
     error = None
 
@@ -415,6 +414,7 @@ def edit_customer(
             duplicate_email = (
                 Customer.objects
                 .filter(
+                    distributor=request.user.distributor_profile,
                     email__iexact=email
                 )
                 .exclude(
@@ -500,10 +500,7 @@ def delete_customer(
     customer_id
 ):
 
-    customer = get_object_or_404(
-        Customer,
-        id=customer_id
-    )
+    customer = get_object_or_404(Customer, id=customer_id, distributor=request.user.distributor_profile)
 
     if request.method == "POST":
 
@@ -519,3 +516,4 @@ def delete_customer(
     return redirect(
         "customer_list"
     )
+
