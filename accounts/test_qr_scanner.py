@@ -184,3 +184,23 @@ class QRScannerTests(TestCase):
             response,
             "QR image must be 5 MB or smaller.",
         )
+
+
+    def test_invoice_preview_displays_qr_code(self):
+        from django.core.files.base import ContentFile
+
+        self.invoice.qr_code.save(
+            "preview-test.png",
+            ContentFile(b"test-qr-image"),
+            save=True,
+        )
+
+        response = self.client.get(
+            reverse("invoice_detail", args=[self.invoice.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.invoice.qr_code.url)
+        self.assertContains(response, "Invoice QR Code")
+
+        self.invoice.qr_code.delete(save=False)

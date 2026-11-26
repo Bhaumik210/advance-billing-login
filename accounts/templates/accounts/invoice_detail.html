@@ -22,6 +22,14 @@
     <div class="row"><strong>Grand Total:</strong> ₹{{ invoice.grand_total }}</div>
     <div class="row"><strong>Paid Amount:</strong> ₹{{ paid_amount }}</div>
     <div class="row"><strong>Balance:</strong> <span class="amount">₹{{ balance }}</span></div>
+    {% if invoice.qr_code %}
+    <div class="row">
+        <h3>Invoice QR Code</h3>
+        <img src="{{ invoice.qr_code.url }}" alt="Invoice QR Code" style="width:180px;height:180px;object-fit:contain;">
+        <p>Scan this QR code to open invoice details.</p>
+    </div>
+    {% endif %}
+
 
     <h3>Invoice Items</h3>
     <table>
