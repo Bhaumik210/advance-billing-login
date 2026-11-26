@@ -4,6 +4,8 @@ from datetime import timedelta
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db.models import F, Q
+from django.db.models.functions import Lower
 
 
 class OTPVerification(models.Model):
@@ -13,6 +15,26 @@ class OTPVerification(models.Model):
     otp_code = models.CharField(
         max_length=6
     )
+
+    purpose = models.CharField(
+        max_length=32,
+        choices=[
+            ("distributor_reset", "Distributor Password Reset"),
+            ("admin_reset", "Admin Password Reset"),
+        ],
+        default="distributor_reset",
+        db_index=True,
+    )
+
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=["email", "purpose"],
+                name="accounts_ot_email_262f7f_idx",
+            ),
+        ]
 
     created_at = models.DateTimeField(
         auto_now_add=True
@@ -26,6 +48,41 @@ class OTPVerification(models.Model):
 
     def __str__(self):
         return self.email
+
+
+class OTPResendLimit(models.Model):
+
+    email = models.EmailField()
+
+    purpose = models.CharField(
+        max_length=32,
+        choices=[
+            ("distributor_reset", "Distributor Password Reset"),
+            ("admin_reset", "Admin Password Reset"),
+        ],
+    )
+
+    last_sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    window_started_at = models.DateTimeField(
+        default=timezone.now,
+    )
+
+    request_count = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["email", "purpose"],
+                name="unique_otp_resend_limit",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.email} - {self.purpose}"
 
 
 class DistributorProfile(models.Model):
@@ -76,15 +133,21 @@ class Customer(models.Model):
         max_length=100
     )
 
-    email = models.EmailField(
-        unique=True
-    )
+    email = models.EmailField()
 
     phone = models.CharField(
         max_length=10
     )
 
     address = models.TextField()
+
+    distributor = models.ForeignKey(
+        DistributorProfile,
+        on_delete=models.PROTECT,
+        related_name="customers",
+        null=True,
+        blank=True,
+    )
 
     created_at = models.DateTimeField(
         auto_now_add=True
@@ -93,6 +156,19 @@ class Customer(models.Model):
     updated_at = models.DateTimeField(
         auto_now=True
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower("email"), F("distributor"),
+                name="uniq_customer_email_per_distributor_ci",
+            ),
+            models.UniqueConstraint(
+                Lower("email"),
+                condition=Q(distributor__isnull=True),
+                name="uniq_legacy_customer_email_ci",
+            ),
+        ]
 
     def __str__(self):
         return self.name
@@ -127,6 +203,14 @@ class Product(models.Model):
         blank=True
     )
 
+    distributor = models.ForeignKey(
+        DistributorProfile,
+        on_delete=models.PROTECT,
+        related_name="products",
+        null=True,
+        blank=True,
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True
     )
@@ -148,6 +232,7 @@ class Invoice(models.Model):
     STATUS_CHOICES = [
         ("DRAFT", "Draft"),
         ("UNPAID", "Unpaid"),
+        ("PARTIAL", "Partially Paid"),
         ("PAID", "Paid"),
         ("CANCELLED", "Cancelled"),
     ]
@@ -161,6 +246,14 @@ class Invoice(models.Model):
         Customer,
         on_delete=models.PROTECT,
         related_name="invoices"
+    )
+
+    distributor = models.ForeignKey(
+        DistributorProfile,
+        on_delete=models.PROTECT,
+        related_name="invoices",
+        null=True,
+        blank=True,
     )
 
     invoice_date = models.DateField(
@@ -201,6 +294,12 @@ class Invoice(models.Model):
         default="DRAFT"
     )
 
+    qr_code = models.ImageField(
+        upload_to="invoice_qr/",
+        blank=True,
+        null=True,
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True
     )
@@ -211,6 +310,50 @@ class Invoice(models.Model):
 
     def __str__(self):
         return self.invoice_number
+
+
+class Payment(models.Model):
+
+    PAYMENT_METHOD_CHOICES = [
+        ("CASH", "Cash"),
+        ("UPI", "UPI"),
+        ("CARD", "Card"),
+        ("BANK", "Bank Transfer"),
+        ("OTHER", "Other"),
+    ]
+
+    invoice = models.ForeignKey(
+        Invoice,
+        on_delete=models.CASCADE,
+        related_name="payments",
+    )
+
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+
+    payment_date = models.DateField(
+        default=timezone.localdate,
+    )
+
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        default="CASH",
+    )
+
+    reference = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    notes = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.invoice.invoice_number} - {self.amount}"
 
 
 # ============================================================

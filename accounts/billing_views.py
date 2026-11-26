@@ -84,15 +84,13 @@ def create_invoice(request):
         created_invoice_id.isdigit()
         and int(created_invoice_id) in allowed_invoice_ids
     ):
-        created_invoice = Invoice.objects.filter(
-            pk=created_invoice_id
-        ).first()
+        created_invoice = Invoice.objects.filter(pk=created_invoice_id, distributor=request.user.distributor_profile).first()
 
-    customers = Customer.objects.all().order_by(
+    customers = Customer.objects.filter(distributor=request.user.distributor_profile).order_by(
         "name"
     )
 
-    products = Product.objects.all().order_by(
+    products = Product.objects.filter(distributor=request.user.distributor_profile).order_by(
         "name"
     )
 
@@ -189,9 +187,7 @@ def create_invoice(request):
 
         if selected_customer.isdigit():
 
-            customer = Customer.objects.filter(
-                id=selected_customer
-            ).first()
+            customer = Customer.objects.filter(id=selected_customer, distributor=request.user.distributor_profile).first()
 
         if customer is None:
 
@@ -348,9 +344,7 @@ def create_invoice(request):
 
                     break
 
-                product = Product.objects.filter(
-                    id=product_id
-                ).first()
+                product = Product.objects.filter(id=product_id, distributor=request.user.distributor_profile).first()
 
                 if product is None:
 
@@ -530,6 +524,7 @@ def create_invoice(request):
             with transaction.atomic():
 
                 invoice = Invoice.objects.create(
+                    distributor=request.user.distributor_profile,
                     invoice_number=invoice_number,
                     customer=customer,
                     subtotal=subtotal,
@@ -558,6 +553,28 @@ def create_invoice(request):
                 InvoiceItem.objects.bulk_create(
                     invoice_items
                 )
+
+
+            # Generate and save QR code for the newly created invoice.
+            from io import BytesIO
+            import qrcode
+            from django.core.files.base import ContentFile
+            from django.urls import reverse
+
+            qr_payload = request.build_absolute_uri(
+                reverse("invoice_detail", args=[invoice.pk])
+            )
+
+            qr_image = qrcode.make(qr_payload)
+            qr_buffer = BytesIO()
+            qr_image.save(qr_buffer, format="PNG")
+
+            invoice.qr_code.save(
+                f"{invoice.invoice_number}.png",
+                ContentFile(qr_buffer.getvalue()),
+                save=True,
+            )
+            qr_buffer.close()
 
             created_invoice_ids = request.session.get(
                 "created_invoice_ids",
@@ -605,7 +622,7 @@ def create_invoice(request):
 @distributor_required
 def invoice_list(request):
     invoices = (
-        Invoice.objects
+        Invoice.objects.filter(distributor=request.user.distributor_profile)
         .select_related("customer")
         .prefetch_related("items")
         .order_by("-invoice_date", "-id")
@@ -627,7 +644,7 @@ def invoice_detail(request, invoice_id):
         Invoice.objects.select_related("customer").prefetch_related(
             "items__product"
         ),
-        pk=invoice_id
+        pk=invoice_id, distributor=request.user.distributor_profile
     )
 
     invoice_items = invoice.items.select_related("product").all()
@@ -718,7 +735,7 @@ def download_invoice_pdf(request, invoice_id):
         Invoice.objects.select_related("customer").prefetch_related(
             "items__product"
         ),
-        pk=invoice_id
+        pk=invoice_id, distributor=request.user.distributor_profile
     )
 
     profile = DistributorProfile.objects.filter(
