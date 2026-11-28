@@ -165,6 +165,85 @@ class QRScannerTests(TestCase):
 
             invoice.qr_code.delete(save=False)
 
+
+    def test_invoice_creation_saves_multiple_products(self):
+        from tempfile import TemporaryDirectory
+        from django.test import override_settings
+        from accounts.models import Product, InvoiceItem
+
+        product_one = Product.objects.create(
+            name="Multiple Test Product One",
+            category="Test",
+            price=Decimal("100.00"),
+            stock=10,
+            gst_rate=Decimal("18.00"),
+            distributor=self.profile,
+        )
+
+        product_two = Product.objects.create(
+            name="Multiple Test Product Two",
+            category="Test",
+            price=Decimal("200.00"),
+            stock=10,
+            gst_rate=Decimal("5.00"),
+            distributor=self.profile,
+        )
+
+        with TemporaryDirectory() as media_dir:
+            with override_settings(MEDIA_ROOT=media_dir):
+                response = self.client.post(
+                    reverse("create_invoice"),
+                    {
+                        "customer": str(self.customer.pk),
+                        "product_id": [
+                            str(product_one.pk),
+                            str(product_two.pk),
+                        ],
+                        "quantity": ["2", "3"],
+                        "discount_rate": ["0", "0"],
+                    },
+                )
+
+                self.assertEqual(response.status_code, 302)
+
+                invoice = Invoice.objects.exclude(
+                    pk=self.invoice.pk
+                ).latest("pk")
+
+                items = list(
+                    InvoiceItem.objects.filter(invoice=invoice)
+                )
+
+                self.assertEqual(len(items), 2)
+
+                quantities = {
+                    item.product_id: item.quantity
+                    for item in items
+                }
+
+                self.assertEqual(
+                    quantities,
+                    {
+                        product_one.pk: 2,
+                        product_two.pk: 3,
+                    },
+                )
+
+                self.assertEqual(
+                    invoice.subtotal,
+                    Decimal("800.00"),
+                )
+                self.assertEqual(
+                    invoice.gst_amount,
+                    Decimal("66.00"),
+                )
+                self.assertEqual(
+                    invoice.grand_total,
+                    Decimal("866.00"),
+                )
+
+                invoice.qr_code.delete(save=False)
+
     def test_oversized_qr_image_is_rejected(self):
         from django.core.files.uploadedfile import SimpleUploadedFile
 
