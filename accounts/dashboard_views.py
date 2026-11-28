@@ -249,6 +249,7 @@ def qr_scanner(request):
         balance = invoice.grand_total - paid_amount
 
         details = {
+            "invoice_id": invoice.id,
             "invoice_number": invoice.invoice_number,
             "invoice_date": invoice.invoice_date.strftime("%d-%m-%Y"),
             "customer_name": invoice.customer.name,
