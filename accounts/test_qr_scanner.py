@@ -244,6 +244,50 @@ class QRScannerTests(TestCase):
 
                 invoice.qr_code.delete(save=False)
 
+    def test_invoice_preview_displays_complete_details(self):
+        from accounts.models import Product, InvoiceItem
+
+        product = Product.objects.create(
+            name="Preview Detail Test Product",
+            category="Test",
+            price=Decimal("150.00"),
+            stock=10,
+            gst_rate=Decimal("18.00"),
+            distributor=self.profile,
+        )
+
+        InvoiceItem.objects.create(
+            invoice=self.invoice,
+            product=product,
+            quantity=2,
+            unit_price=Decimal("150.00"),
+            gst_rate=Decimal("18.00"),
+            discount_rate=Decimal("10.00"),
+            discount_amount=Decimal("30.00"),
+            line_total=Decimal("300.00"),
+        )
+
+        self.invoice.subtotal = Decimal("300.00")
+        self.invoice.discount_amount = Decimal("30.00")
+        self.invoice.gst_amount = Decimal("48.60")
+        self.invoice.grand_total = Decimal("318.60")
+        self.invoice.save()
+
+        response = self.client.get(
+            reverse("invoice_detail", args=[self.invoice.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.invoice.invoice_number)
+        self.assertContains(response, "Invoice Date")
+        self.assertContains(response, "Preview Detail Test Product")
+        self.assertContains(response, "Quantity")
+        self.assertContains(response, "Unit Price")
+        self.assertContains(response, "GST Rate")
+        self.assertContains(response, "Discount")
+        self.assertContains(response, "Grand Total")
+        self.assertContains(response, "318.60")
+
     def test_oversized_qr_image_is_rejected(self):
         from django.core.files.uploadedfile import SimpleUploadedFile
 
